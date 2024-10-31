@@ -34,30 +34,84 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 class Application(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("Raspberry Pi Manager")
-        self.geometry("600x400")
         
+        self.title("Raspberry Pi Manager")
+        self.attributes("-fullscreen", True)  # Definir para tela cheia
+        self.bind("<Escape>", self.exit_fullscreen)  # Tecla Esc para sair da tela cheia
+
         self.create_widgets()
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
+        self.load_env()
+        self.display_mac_address()
+        self.display_IP_address()
 
     def create_widgets(self):
+        # Entrada para código de barras
         self.label = tk.Label(self, text="Digite o código de barras:")
         self.label.pack(pady=10)
 
         self.barcode_entry = tk.Entry(self, width=50)
         self.barcode_entry.pack(pady=5)
-        self.barcode_entry.bind("<Return>", self.process_barcode)  
+        self.barcode_entry.bind("<Return>", self.process_barcode)
 
         self.submit_button = tk.Button(self, text="Enviar", command=self.process_barcode)
         self.submit_button.pack(pady=10)
 
+        # Área de logs
         self.log_area = scrolledtext.ScrolledText(self, wrap=tk.WORD, width=70, height=15)
         self.log_area.pack(pady=10)
         self.log_area.insert(tk.END, "Logs:\n")
 
+        # Configuração do .env
+        self.env_label = tk.Label(self, text="Configuração do arquivo .env:")
+        self.env_label.pack(pady=10)
+
+        self.env_text = scrolledtext.ScrolledText(self, wrap=tk.WORD, width=70, height=10)
+        self.env_text.pack(pady=5)
+
+        self.save_button = tk.Button(self, text="Salvar .env", command=self.save_env)
+        self.save_button.pack(pady=10)
+
+    def display_mac_address(self):
+        """Exibe o MAC Address no canto superior direito da janela."""
+        mac_address = self.get_mac_address()
+        if mac_address:
+            self.mac_label = tk.Label(self, text=f"MAC Address: {mac_address}", font=("Arial", 10), fg="gray")
+            # Posiciona no canto superior direito
+    def display_IP_address(self):
+            """Exibe o IP Address no canto superior direito da janela."""
+            IP_address = self.get_public_ip()
+            if IP_address:
+                self.IP_label = tk.Label(self, text=f"IP Address: {IP_address}", font=("Arial", 10), fg="gray")
+                # Posiciona no canto superior direito
+    def exit_fullscreen(self, event=None):
+        """Sair do modo de tela cheia ao pressionar Esc."""
+        self.attributes("-fullscreen", False)
+
+    def on_closing(self):
+        if messagebox.askokcancel("Sair", "Tem certeza que deseja sair?"):
+            self.destroy()
+   
+
+    def load_env(self):
+        """Carrega o conteúdo do arquivo .env para a área de texto."""
+        if os.path.exists('.env'):
+            with open('.env', 'r') as env_file:
+                content = env_file.read()
+                self.env_text.insert(tk.END, content)
+
     def log(self, message):
         self.log_area.insert(tk.END, f"{message}\n")
         self.log_area.see(tk.END)
+
+    def save_env(self):
+        env_content = self.env_text.get("1.0", tk.END).strip()
+        try:
+            with open('.env', 'w') as env_file:
+                env_file.write(env_content)
+            messagebox.showinfo("Sucesso", "Arquivo .env salvo com sucesso!")
+        except Exception as e:
+            messagebox.showerror("Erro", f"Não foi possível salvar o arquivo .env:\n{str(e)}")
 
     def process_barcode(self, event=None):
         barcode = self.barcode_entry.get().strip()
