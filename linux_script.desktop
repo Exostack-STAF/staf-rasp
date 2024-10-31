@@ -1,6 +1,0 @@
-[Desktop Entry]
-Name=Executar Script
-Comment=Executa o script Python no terminal
-Exec=gnome-terminal -- bash -c "cd %f && ./STMF-RASP.sh; exec bash"
-Terminal=true
-Type=Application

@@ -1,4 +1,0 @@
-([('script',
-   '/Users/pedrovictor/Documents/Developer/CodeWave '
-   'Systems/raspberry_pi_app/dist/script',
-   'EXECUTABLE')],)
