@@ -42,6 +42,7 @@ class Application(tk.Tk):
         self.attributes("-fullscreen", True)  # Definir para tela cheia
         self.bind("<Escape>", self.exit_fullscreen)  # Tecla Esc para sair da tela cheia
 
+        self.barcode_entry = ""  # Inicializa a variável para acumular entradas
         self.create_widgets()
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.display_mac_address()
@@ -49,7 +50,7 @@ class Application(tk.Tk):
         # Iniciar listener de teclas
         self.listener = keyboard.Listener(on_press=self.on_key_press)
         self.listener.start()
-    
+
     def create_widgets(self):
         # Entrada para código de barras
         self.label = tk.Label(self, text="Digite o código de barras:")
@@ -77,8 +78,6 @@ class Application(tk.Tk):
             # Para teclas especiais
             self.log(f"Tecla especial pressionada: {key}")
 
-
-     
 
     def display_mac_address(self):
         """Exibe o MAC Address no canto superior direito da janela."""
