@@ -56,27 +56,29 @@ class Application(tk.Tk):
         self.label = tk.Label(self, text="Digite o código de barras:")
         self.label.pack(pady=10)
 
+        self.barcode_entry = tk.Entry(self, width=50)  # Cria um widget de entrada
+        self.barcode_entry.pack(pady=10)
+
         self.log_area = scrolledtext.ScrolledText(self, wrap=tk.WORD, width=150, height=40)
         self.log_area.pack(pady=10)
         self.log_area.insert(tk.END, "Logs:\n")
 
+
     def on_key_press(self, key):
         try:
-            # Verifica se a tecla não é None
             if key is not None:  
                 if hasattr(key, 'char') and key.char is not None:  # Para teclas normais
                     try:
                         self.barcode_entry.insert(tk.END, key.char)  # Captura a tecla normal
-                        self.log(f"Código Atual: {self.barcode_entry}")
+                        self.log(f"Código Atual: {self.barcode_entry.get()}")
                     except Exception as e:
-                        self.log(f"Erro ao salvar a tecla: {e}")  # Mensagem de erro ao salvar a tecla
+                        self.log(f"Erro ao salvar a tecla: {e}")
                 elif key == keyboard.Key.enter:  # Se a tecla Enter for pressionada
                     self.process_barcode()
-                    self.barcode_entry = ''  # Limpa o código acumulado após o processamento
+                    self.barcode_entry.delete(0, tk.END)  # Limpa o campo após o processamento
         except AttributeError as e:
-            self.log(f"Erro: {e}")  # Registra erro específico
-            # Para teclas especiais
-            self.log(f"Tecla especial pressionada: {key}")
+            self.log(f"Erro: {e}")
+
 
     def display_mac_address(self):
         """Exibe o MAC Address no canto superior direito da janela."""
