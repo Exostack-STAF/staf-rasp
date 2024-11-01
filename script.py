@@ -9,6 +9,7 @@ import logging
 from dotenv import load_dotenv
 import tkinter as tk
 from tkinter import scrolledtext, messagebox
+from pynput import keyboard
 
 # Carregar variáveis de ambiente do arquivo .env
 load_dotenv()
@@ -45,6 +46,10 @@ class Application(tk.Tk):
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.display_mac_address()
 
+        # Iniciar listener de teclas
+        self.listener = keyboard.Listener(on_press=self.on_key_press)
+        self.listener.start()
+
     def create_widgets(self):
         # Entrada para código de barras
         self.label = tk.Label(self, text="Digite o código de barras:")
@@ -54,10 +59,20 @@ class Application(tk.Tk):
         self.barcode_entry.pack(pady=5)
         self.barcode_entry.bind("<Return>", self.process_barcode)
         self.barcode_entry.focus()
+
         # Área de logs
         self.log_area = scrolledtext.ScrolledText(self, wrap=tk.WORD, width=150, height=40)
         self.log_area.pack(pady=10)
         self.log_area.insert(tk.END, "Logs:\n")
+
+    def on_key_press(self, key):
+        try:
+            # Registra a tecla pressionada no log
+            self.log(f"Tecla pressionada: {key.char}")
+        except AttributeError:
+            # Para teclas especiais (como Shift, Ctrl, etc.)
+            self.log(f"Tecla especial pressionada: {key}")
+
      
 
     def display_mac_address(self):
