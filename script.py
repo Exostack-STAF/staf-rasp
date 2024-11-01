@@ -68,7 +68,11 @@ class Application(tk.Tk):
     def on_key_press(self, key):
         try:
             # Registra a tecla pressionada no log
-            self.log(f"Tecla pressionada: {key.char}")
+            self.barcode_entry += key.char
+            self.log(f"Codigo Atual: {self.barcode_entry}")
+            if key.char == 'Key.enter':
+                self.process_barcode
+                self.barcode_entry.delete(0, tk.END)
         except AttributeError:
             # Para teclas especiais (como Shift, Ctrl, etc.)
             self.log(f"Tecla especial pressionada: {key}")
