@@ -53,6 +53,7 @@ class Application(tk.Tk):
         self.barcode_entry = tk.Entry(self, width=100)
         self.barcode_entry.pack(pady=5)
         self.barcode_entry.bind("<Return>", self.process_barcode)
+        self.barcode_entry.focus()
         # Área de logs
         self.log_area = scrolledtext.ScrolledText(self, wrap=tk.WORD, width=150, height=40)
         self.log_area.pack(pady=10)
