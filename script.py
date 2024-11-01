@@ -66,7 +66,7 @@ class Application(tk.Tk):
             if key is not None:  
                 if hasattr(key, 'char') and key.char is not None:  # Para teclas normais
                     try:
-                        self.barcode_entry += key.char  # Captura a tecla normal
+                        self.barcode_entry.insert(tk.END, key.char)  # Captura a tecla normal
                         self.log(f"Código Atual: {self.barcode_entry}")
                     except Exception as e:
                         self.log(f"Erro ao salvar a tecla: {e}")  # Mensagem de erro ao salvar a tecla
@@ -77,7 +77,6 @@ class Application(tk.Tk):
             self.log(f"Erro: {e}")  # Registra erro específico
             # Para teclas especiais
             self.log(f"Tecla especial pressionada: {key}")
-
 
     def display_mac_address(self):
         """Exibe o MAC Address no canto superior direito da janela."""
