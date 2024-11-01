@@ -62,8 +62,8 @@ class Application(tk.Tk):
     def on_key_press(self, key):
         try:
             # Registra a tecla pressionada no log
-            if hasattr(key, 'char') and key.char is not None:
-                self.barcode_entry += key.char
+            if hasattr(key) and key is not None:
+                self.barcode_entry += key
                 self.log(f"Código Atual: {self.barcode_entry}")
             elif key == keyboard.Key.enter:  # Verifica se a tecla Enter foi pressionada
                 self.process_barcode()
