@@ -1,14 +1,23 @@
 #!/bin/bash
 
-echo "Iniciando a instalação do aplicativo..."
+# Atualiza o gerenciador de pacotes
+echo "Atualizando o gerenciador de pacotes..."
+sudo apt-get update
 
-# Atualizar o sistema
-echo "Atualizando o sistema..."
-sudo apt update && sudo apt upgrade -y
+# Instala o Python3 e o pip, se não estiverem instalados
+echo "Instalando Python e pip..."
+sudo apt-get install -y python3 python3-pip
 
-# Instalar Python e dependências
-echo "Instalando Python e bibliotecas necessárias..."
-sudo apt install python3 python3-pip -y
-pip3 install requests python-dotenv
+# Instala as bibliotecas necessárias
+echo "Instalando as bibliotecas necessárias..."
+pip3 install requests python-dotenv pynput --break-system-packages
 
-echo "Instalação concluída com sucesso!"
+# Verifica se o tkinter já está instalado
+if ! dpkg -l | grep -q python3-tk; then
+    echo "Instalando tkinter..."
+    sudo apt-get install -y python3-tk
+else
+    echo "tkinter já está instalado."
+fi
+
+echo "Instalação concluída!"
