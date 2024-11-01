@@ -68,14 +68,19 @@ class Application(tk.Tk):
     def on_key_press(self, key):
         try:
             # Registra a tecla pressionada no log
-            self.barcode_entry += key.char
-            self.log(f"Codigo Atual: {self.barcode_entry}")
-            if key.char == 'Key.enter':
-                self.process_barcode
-                self.barcode_entry.delete(0, tk.END)
+            if hasattr(key, 'char') and key.char is not None:
+                self.barcode_entry += key.char
+                self.log(f"Codigo Atual: {self.barcode_entry}")
+            
+            # Verifica se a tecla pressionada é a tecla Enter
+            if key == keyboard.Key.enter:  # Corrigido para usar a referência correta
+                self.process_barcode()  # Adicionado parênteses para chamar a função
+                self.barcode_entry = ''  # Limpa o código de barras
+
         except AttributeError:
             # Para teclas especiais (como Shift, Ctrl, etc.)
             self.log(f"Tecla especial pressionada: {key}")
+
 
      
 
