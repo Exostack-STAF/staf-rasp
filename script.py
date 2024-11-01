@@ -49,18 +49,12 @@ class Application(tk.Tk):
         # Iniciar listener de teclas
         self.listener = keyboard.Listener(on_press=self.on_key_press)
         self.listener.start()
-
+    
     def create_widgets(self):
         # Entrada para código de barras
         self.label = tk.Label(self, text="Digite o código de barras:")
         self.label.pack(pady=10)
 
-        self.barcode_entry = tk.Entry(self, width=100)
-        self.barcode_entry.pack(pady=5)
-        self.barcode_entry.bind("<Return>", self.process_barcode)
-        self.barcode_entry.focus()
-
-        # Área de logs
         self.log_area = scrolledtext.ScrolledText(self, wrap=tk.WORD, width=150, height=40)
         self.log_area.pack(pady=10)
         self.log_area.insert(tk.END, "Logs:\n")
@@ -70,12 +64,13 @@ class Application(tk.Tk):
             # Registra a tecla pressionada no log
             if hasattr(key, 'char') and key.char is not None:
                 self.barcode_entry += key.char
-                self.log(f"Codigo Atual: {self.barcode_entry}")
-            
-            # Verifica se a tecla pressionada é a tecla Enter
-            if key == keyboard.Key.enter:  # Corrigido para usar a referência correta
-                self.process_barcode()  # Adicionado parênteses para chamar a função
-                self.barcode_entry = ''  # Limpa o código de barras
+                self.log(f"Código Atual: {self.barcode_entry}")
+            elif key == keyboard.Key.enter:  # Verifica se a tecla Enter foi pressionada
+                self.process_barcode()
+                self.barcode_entry = ''  # Limpa o código acumulado após o processamento
+        except AttributeError:
+            # Para teclas especiais
+            self.log(f"Tecla especial pressionada: {key}")
 
         except AttributeError:
             # Para teclas especiais (como Shift, Ctrl, etc.)
