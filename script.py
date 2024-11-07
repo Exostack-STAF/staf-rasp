@@ -69,7 +69,6 @@ class Application(tk.Tk):
                 if hasattr(key, 'char') and key.char is not None:  # Para teclas normais
                     try:
                         self.barcode_entry.insert(tk.END, key.char)  # Captura a tecla normal
-                        self.log(f"Código Atual: {self.barcode_entry.get()}")
                     except Exception as e:
                         self.log(f"Erro ao salvar a tecla: {e}")  # Mensagem de erro ao salvar a tecla
                 elif key == keyboard.Key.enter:  # Se a tecla Enter for pressionada
