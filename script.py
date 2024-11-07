@@ -42,7 +42,6 @@ class Application(tk.Tk):
         self.attributes("-fullscreen", True)  # Definir para tela cheia
         self.bind("<Escape>", self.exit_fullscreen)  # Tecla Esc para sair da tela cheia
 
-        self.barcode_entry = ""  # Inicializa a variável para acumular entradas
         self.create_widgets()
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.display_mac_address()
@@ -63,7 +62,6 @@ class Application(tk.Tk):
         self.log_area.pack(pady=10)
         self.log_area.insert(tk.END, "Logs:\n")
 
-
     def on_key_press(self, key):
         try:
             # Verifica se a tecla não é None
@@ -71,12 +69,11 @@ class Application(tk.Tk):
                 if hasattr(key, 'char') and key.char is not None:  # Para teclas normais
                     try:
                         self.barcode_entry.insert(tk.END, key.char)  # Captura a tecla normal
-                        self.log(f"Código Atual: {self.barcode_entry}")
+                        self.log(f"Código Atual: {self.barcode_entry.get()}")
                     except Exception as e:
                         self.log(f"Erro ao salvar a tecla: {e}")  # Mensagem de erro ao salvar a tecla
                 elif key == keyboard.Key.enter:  # Se a tecla Enter for pressionada
                     self.process_barcode()
-                    self.barcode_entry = ''  # Limpa o código acumulado após o processamento
         except AttributeError as e:
             self.log(f"Erro: {e}")  # Registra erro específico
             # Para teclas especiais
@@ -87,7 +84,8 @@ class Application(tk.Tk):
         mac_address = self.get_mac_address()
         if mac_address:
             self.mac_label = tk.Label(self, text=f"MAC Address: {mac_address}", font=("Arial", 30), fg="gray")
-            # Posiciona no canto superior direito
+            self.mac_label.pack(anchor='ne', padx=10, pady=10)  # Posiciona no canto superior direito
+
     def exit_fullscreen(self, event=None):
         """Sair do modo de tela cheia ao pressionar Esc."""
         self.attributes("-fullscreen", False)
@@ -95,7 +93,6 @@ class Application(tk.Tk):
     def on_closing(self):
         if messagebox.askokcancel("Sair", "Tem certeza que deseja sair?"):
             self.destroy()
-   
 
     def load_env(self):
         """Carrega o conteúdo do arquivo .env para a área de texto."""
