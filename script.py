@@ -65,7 +65,7 @@ class Application(tk.Tk):
         self.label = tk.Label(self.main_frame, text="Digite o código de barras:")
         self.label.pack(pady=10)
 
-        self.barcode_entry = tk.Entry(self.main_frame, width=50, state='disabled')  # Cria um widget de entrada desabilitado
+        self.barcode_entry = tk.Entry(self.main_frame, width=50)  # Cria um widget de entrada
         self.barcode_entry.pack(pady=10)
 
         self.log_area = scrolledtext.ScrolledText(self.main_frame, wrap=tk.WORD, width=150, height=40)
@@ -97,10 +97,9 @@ class Application(tk.Tk):
             if key is not None:  
                 if hasattr(key, 'char') and key.char is not None:  # Para teclas normais
                     try:
-                        self.barcode_entry.config(state='normal')
-                        self.barcode_entry.insert(tk.END, key.char)
-                        self.barcode_entry.config(state='disabled')  # Captura a tecla normal
-                        self.log(f"Código Atual: {self.barcode_entry.get()}")
+                     self.barcode_entry.config(state='normal')
+                     self.barcode_entry.insert(tk.END, key.char)
+                   
                     except Exception as e:
                         self.log(f"Erro ao salvar a tecla: {e}")  # Mensagem de erro ao salvar a tecla
                 elif key == keyboard.Key.enter:  # Se a tecla Enter for pressionada
@@ -153,6 +152,7 @@ class Application(tk.Tk):
         if not barcode:
             return
         self.barcode_entry.delete(0, tk.END)
+        self.barcode_entry.config(state='disabled')
         # Chama a função principal (ou a parte do código que precisa ser executada)
         self.insert_data(RASPBERRY_ID, barcode, FILIAL_ID)
 
