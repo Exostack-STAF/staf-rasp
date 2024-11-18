@@ -97,7 +97,9 @@ class Application(tk.Tk):
             if key is not None:  
                 if hasattr(key, 'char') and key.char is not None:  # Para teclas normais
                     try:
-                        self.barcode_entry.insert(tk.END, key.char)  # Captura a tecla normal
+                        self.barcode_entry.config(state='normal')
+                        self.barcode_entry.insert(tk.END, key.char)
+                        self.barcode_entry.config(state='disabled')  # Captura a tecla normal
                         self.log(f"Código Atual: {self.barcode_entry.get()}")
                     except Exception as e:
                         self.log(f"Erro ao salvar a tecla: {e}")  # Mensagem de erro ao salvar a tecla
