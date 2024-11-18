@@ -99,7 +99,7 @@ class Application(tk.Tk):
                     try:
                      self.barcode_entry.config(state='normal')
                      self.barcode_entry.insert(tk.END, key.char)
-                   
+                     self.barcode_entry.config(state='disabled')
                     except Exception as e:
                         self.log(f"Erro ao salvar a tecla: {e}")  # Mensagem de erro ao salvar a tecla
                 elif key == keyboard.Key.enter:  # Se a tecla Enter for pressionada
@@ -151,6 +151,7 @@ class Application(tk.Tk):
    
         if not barcode:
             return
+        self.barcode_entry.config(state='normal')
         self.barcode_entry.delete(0, tk.END)
         self.barcode_entry.config(state='disabled')
         # Chama a função principal (ou a parte do código que precisa ser executada)
