@@ -4,11 +4,11 @@ import uuid
 import csv
 from datetime import datetime
 import time
-import subprocess
+import threading
 import logging
 from dotenv import load_dotenv
 import tkinter as tk
-from tkinter import scrolledtext, messagebox
+from tkinter import scrolledtext, messagebox, ttk
 from pynput import keyboard
 
 # Carregar variáveis de ambiente do arquivo .env
@@ -50,17 +50,46 @@ class Application(tk.Tk):
         self.listener = keyboard.Listener(on_press=self.on_key_press)
         self.listener.start()
 
+        # Lista de códigos de barras não enviados
+        self.failed_barcodes = []
+
     def create_widgets(self):
-        # Entrada para código de barras
-        self.label = tk.Label(self, text="Digite o código de barras:")
+        # Notebook para abas
+        self.notebook = ttk.Notebook(self)
+        self.notebook.pack(expand=True, fill='both')
+
+        # Aba principal
+        self.main_frame = ttk.Frame(self.notebook)
+        self.notebook.add(self.main_frame, text='Principal')
+
+        self.label = tk.Label(self.main_frame, text="Digite o código de barras:")
         self.label.pack(pady=10)
 
-        self.barcode_entry = tk.Entry(self, width=50)  # Cria um widget de entrada
+        self.barcode_entry = tk.Entry(self.main_frame, width=50, state='disabled')  # Cria um widget de entrada desabilitado
         self.barcode_entry.pack(pady=10)
 
-        self.log_area = scrolledtext.ScrolledText(self, wrap=tk.WORD, width=150, height=40)
+        self.log_area = scrolledtext.ScrolledText(self.main_frame, wrap=tk.WORD, width=150, height=40)
         self.log_area.pack(pady=10)
         self.log_area.insert(tk.END, "Logs:\n")
+
+        # Aba de configuração
+        self.config_frame = ttk.Frame(self.notebook)
+        self.notebook.add(self.config_frame, text='Configuração')
+
+        self.env_text = scrolledtext.ScrolledText(self.config_frame, wrap=tk.WORD, width=150, height=40)
+        self.env_text.pack(pady=10)
+        self.load_env()
+
+        self.save_button = tk.Button(self.config_frame, text="Salvar .env", command=self.save_env)
+        self.save_button.pack(pady=10)
+
+        # Aba de códigos não enviados
+        self.failed_frame = ttk.Frame(self.notebook)
+        self.notebook.add(self.failed_frame, text='Códigos Não Enviados')
+
+        self.failed_list = scrolledtext.ScrolledText(self.failed_frame, wrap=tk.WORD, width=150, height=40)
+        self.failed_list.pack(pady=10)
+        self.failed_list.insert(tk.END, "Códigos de Barras Não Enviados:\n")
 
     def on_key_press(self, key):
         try:
@@ -69,6 +98,7 @@ class Application(tk.Tk):
                 if hasattr(key, 'char') and key.char is not None:  # Para teclas normais
                     try:
                         self.barcode_entry.insert(tk.END, key.char)  # Captura a tecla normal
+                        self.log(f"Código Atual: {self.barcode_entry.get()}")
                     except Exception as e:
                         self.log(f"Erro ao salvar a tecla: {e}")  # Mensagem de erro ao salvar a tecla
                 elif key == keyboard.Key.enter:  # Se a tecla Enter for pressionada
@@ -135,26 +165,46 @@ class Application(tk.Tk):
             return None
     
     def insert_data(self, raspberry_id, codigobarras, filial_id):
-        try:
-            data_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            payload = {
-                'raspberry_id': RASPBERRY_ID,
-                'codigo_barras': codigobarras,
-                'data_time': data_time,
-                'filial_id': FILIAL_ID
-            }
-            
-            response = requests.post(LARAVEL_STORE_ENDPOINT, json=payload)
-            
-            if response.status_code == 200:
-                self.log("Dados enviados com sucesso")
-            else:
-                self.log(f"Erro ao enviar dados: {response.status_code}")
-                self.backup_data_csv(raspberry_id, codigobarras, filial_id, data_time)
+        data_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        payload = {
+            'raspberry_id': RASPBERRY_ID,
+            'codigo_barras': codigobarras,
+            'data_time': data_time,
+            'filial_id': FILIAL_ID
+        }
 
-        except requests.exceptions.RequestException as e:
-            self.log(f"Erro ao tentar conectar com o endpoint: {e}")
-            self.backup_data_csv(raspberry_id, codigobarras, filial_id, data_time)
+        def send_data():
+            while True:
+                try:
+                    response = requests.post(LARAVEL_STORE_ENDPOINT, json=payload)
+                    
+                    if response.status_code == 200:
+                        self.log("Dados enviados com sucesso")
+                        break
+                    else:
+                        self.log(f"Erro ao enviar dados: {response.status_code}")
+                        self.backup_data_csv(raspberry_id, codigobarras, filial_id, data_time)
+                        self.failed_barcodes.append(payload)
+                        self.update_failed_list()
+                        self.log("Tentando reenviar em 1 hora...")
+                        time.sleep(3600)  # Espera 1 hora antes de tentar novamente
+
+                except requests.exceptions.RequestException as e:
+                    self.log(f"Erro ao tentar conectar com o endpoint: {e}")
+                    self.backup_data_csv(raspberry_id, codigobarras, filial_id, data_time)
+                    self.failed_barcodes.append(payload)
+                    self.update_failed_list()
+                    self.log("Tentando reenviar em 1 hora...")
+                    time.sleep(3600)  # Espera 1 hora antes de tentar novamente
+
+        # Inicia a thread para enviar os dados
+        threading.Thread(target=send_data).start()
+
+    def update_failed_list(self):
+        self.failed_list.delete(1.0, tk.END)
+        self.failed_list.insert(tk.END, "Códigos de Barras Não Enviados:\n")
+        for payload in self.failed_barcodes:
+            self.failed_list.insert(tk.END, f"{payload['codigo_barras']} - {payload['data_time']}\n")
 
     def backup_data_csv(self, raspberry_id, codigobarras, filial_id, data_time):
         try:
