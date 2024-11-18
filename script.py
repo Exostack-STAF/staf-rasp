@@ -65,7 +65,7 @@ class Application(tk.Tk):
         self.label = tk.Label(self.main_frame, text="Digite o código de barras:")
         self.label.pack(pady=10)
 
-        self.barcode_entry = tk.Entry(self.main_frame, width=50)  # Cria um widget de entrada
+        self.barcode_entry = tk.Entry(self.main_frame, width=50, state='disabled')  # Cria um widget de entrada
         self.barcode_entry.pack(pady=10)
 
         self.log_area = scrolledtext.ScrolledText(self.main_frame, wrap=tk.WORD, width=150, height=40)
