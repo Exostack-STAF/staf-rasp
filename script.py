@@ -180,18 +180,19 @@ class Application(tk.Tk):
             while True:
                 try:
                     response = requests.post(LARAVEL_STORE_ENDPOINT, json=payload)
-                    
+
                     if response.status_code == 200:
-                        self.log("Dados enviados com sucesso")
+                        success_message = response.json().get('message', 'Dados enviados com sucesso')
+                        self.log(success_message)
                         break
                     else:
-                        self.log(f"Erro ao enviar dados: {response.status_code}")
+                        error_message = response.json().get('message', 'Erro desconhecido')
+                        self.log(f"Erro ao enviar dados: {response.status_code} - {error_message}")
                         self.backup_data_csv(raspberry_id, codigobarras, filial_id, data_time)
                         self.failed_barcodes.append(payload)
                         self.update_failed_list()
                         self.log("Tentando reenviar em 1 hora...")
                         time.sleep(3600)  # Espera 1 hora antes de tentar novamente
-
                 except requests.exceptions.RequestException as e:
                     self.log(f"Erro ao tentar conectar com o endpoint: {e}")
                     self.backup_data_csv(raspberry_id, codigobarras, filial_id, data_time)
