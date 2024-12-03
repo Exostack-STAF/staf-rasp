@@ -177,29 +177,23 @@ class Application(tk.Tk):
         }
 
         def send_data():
-            while True:
-                try:
-                    response = requests.post(LARAVEL_STORE_ENDPOINT, json=payload)
+            try:
+                response = requests.post(LARAVEL_STORE_ENDPOINT, json=payload)
 
-                    if response.status_code == 200:
-                        success_message = response.json().get('message', 'Dados enviados com sucesso')
-                        self.log(success_message)
-                        break
-                    else:
-                        error_message = response.json().get('message', 'Erro desconhecido')
-                        self.log(f"Erro ao enviar dados: {response.status_code} - {error_message}")
-                        self.backup_data_csv(raspberry_id, codigobarras, filial_id, data_time)
-                        self.failed_barcodes.append(payload)
-                        self.update_failed_list()
-                        self.log("Tentando reenviar em 1 hora...")
-                        time.sleep(3600)  # Espera 1 hora antes de tentar novamente
-                except requests.exceptions.RequestException as e:
-                    self.log(f"Erro ao tentar conectar com o endpoint: {e}")
+                if response.status_code == 200:
+                    success_message = response.json().get('message', 'Dados enviados com sucesso')
+                    self.log(success_message)
+                else:
+                    error_message = response.json().get('message', 'Erro desconhecido')
+                    self.log(f"Erro ao enviar dados: {response.status_code} - {error_message}")
                     self.backup_data_csv(raspberry_id, codigobarras, filial_id, data_time)
                     self.failed_barcodes.append(payload)
                     self.update_failed_list()
-                    self.log("Tentando reenviar em 1 hora...")
-                    time.sleep(3600)  # Espera 1 hora antes de tentar novamente
+            except requests.exceptions.RequestException as e:
+                self.log(f"Erro ao tentar conectar com o endpoint: {e}")
+                self.backup_data_csv(raspberry_id, codigobarras, filial_id, data_time)
+                self.failed_barcodes.append(payload)
+                self.update_failed_list()
 
         # Inicia a thread para enviar os dados
         threading.Thread(target=send_data).start()
