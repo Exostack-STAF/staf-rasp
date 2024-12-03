@@ -190,7 +190,7 @@ class Application(tk.Tk):
                     self.failed_barcodes.append(payload)
                     self.update_failed_list()
             except requests.exceptions.RequestException as e:
-                self.log(f"Erro ao tentar conectar com o endpoint: {e}")
+                self.log(f"Erro ao tentar conectar com o endpoint, sem conexão com a internet:")
                 self.backup_data_csv(raspberry_id, codigobarras, filial_id, data_time)
                 self.failed_barcodes.append(payload)
                 self.update_failed_list()
