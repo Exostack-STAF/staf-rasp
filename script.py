@@ -65,9 +65,17 @@ class Application(tk.Tk):
         self.barcode_entry = tk.Entry(self.main_frame, width=50, state='disabled', font=self.custom_font)  # Cria um widget de entrada desabilitado
         self.barcode_entry.pack(pady=10)
 
-        self.log_area = scrolledtext.ScrolledText(self.main_frame, wrap=tk.WORD, width=100, height=20, font=self.custom_font)
-        self.log_area.pack(pady=10)
+        # Frame para logs lado a lado
+        self.log_frame = ttk.Frame(self.main_frame)
+        self.log_frame.pack(pady=10, fill='both', expand=True)
+
+        self.log_area = scrolledtext.ScrolledText(self.log_frame, wrap=tk.WORD, width=50, height=20, font=self.custom_font)
+        self.log_area.pack(side='left', padx=5, pady=5, fill='both', expand=True)
         self.log_area.insert(tk.END, "Logs:\n")
+
+        self.barcode_log_area = scrolledtext.ScrolledText(self.log_frame, wrap=tk.WORD, width=50, height=20, font=self.custom_font)
+        self.barcode_log_area.pack(side='right', padx=5, pady=5, fill='both', expand=True)
+        self.barcode_log_area.insert(tk.END, "Códigos de Barras:\n")
 
         # Botão para sair do modo de tela cheia
         self.exit_fullscreen_button = tk.Button(self.main_frame, text="Sair do modo de tela cheia", command=self.exit_fullscreen, font=self.custom_font)
@@ -177,7 +185,8 @@ class Application(tk.Tk):
     def process_barcode(self, event=None):
         barcode = self.barcode_entry.get().strip()
    
-        self.log(f"Codigo: {barcode}")
+        self.barcode_log_area.insert(tk.END, f"Codigo: {barcode}\n")
+        self.barcode_log_area.see(tk.END)
    
         if not barcode:
             return
