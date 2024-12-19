@@ -17,20 +17,10 @@ import socket
 load_dotenv()
 
 # Configurações
-LARAVEL_VALIDATE_ENDPOINT = os.getenv('LARAVEL_VALIDATE_ENDPOINT')
-LARAVEL_STATUS_ENDPOINT = os.getenv('LARAVEL_STATUS_ENDPOINT')
-LARAVEL_SSH_KEY_ENDPOINT = os.getenv('LARAVEL_SSH_KEY_ENDPOINT')
 LARAVEL_STORE_ENDPOINT = os.getenv('LARAVEL_STORE_ENDPOINT')
 RASPBERRY_ID = os.getenv('RASPBERRY_ID')
 FILIAL_ID = os.getenv('FILIAL_ID')
 
-MYSQL_CONFIG = {
-    'host': os.getenv('MYSQL_HOST'),
-    'database': os.getenv('MYSQL_DATABASE'),
-    'user': os.getenv('MYSQL_USER'),
-    'password': os.getenv('MYSQL_PASSWORD')
-}
-IDS_FILE_PATH = os.getenv('IDS_FILE_PATH')
 CSV_FILE_PATH = os.getenv('CSV_FILE_PATH')
 
 # Configuração de logging
@@ -141,15 +131,6 @@ class Application(tk.Tk):
             return local_ip
         except Exception as e:
             self.log(f"Erro ao obter o IP local: {e}")
-            return None
-
-    def get_router_ip(self):
-        try:
-            router_ip = socket.gethostbyname(socket.gethostname() + ".local")
-            self.log(f"IP do Roteador: {router_ip}")
-            return router_ip
-        except Exception as e:
-            self.log(f"Erro ao obter o IP do roteador: {e}")
             return None
 
     def get_local_network_ip(self):
@@ -267,10 +248,6 @@ class Application(tk.Tk):
             self.log("Dados salvos localmente no CSV")
         except Exception as e:
             self.log(f"Erro ao salvar dados no CSV: {e}")
-
-    def on_closing(self):
-        if messagebox.askokcancel("Sair", "Você realmente deseja sair?"):
-            self.destroy()
 
     def check_internet_connection(self):
         def update_status():
