@@ -47,6 +47,10 @@ class Application(tk.Tk):
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.display_mac_address()
 
+        self.internet_status_label = tk.Label(self, text="Verificando conexão...", font=("Arial", 20), fg="gray")
+        self.internet_status_label.pack(anchor='ne', padx=10, pady=10)
+        self.check_internet_connection()
+
         # Iniciar listener de teclas
         self.listener = keyboard.Listener(on_press=self.on_key_press)
         self.listener.start()
@@ -69,7 +73,7 @@ class Application(tk.Tk):
         self.barcode_entry = tk.Entry(self.main_frame, width=50, state='disabled')  # Cria um widget de entrada desabilitado
         self.barcode_entry.pack(pady=10)
 
-        self.log_area = scrolledtext.ScrolledText(self.main_frame, wrap=tk.WORD, width=150, height=40)
+        self.log_area = scrolledtext.ScrolledText(self.main_frame, wrap=tk.WORD, width=100, height=20)
         self.log_area.pack(pady=10)
         self.log_area.insert(tk.END, "Logs:\n")
 
@@ -265,6 +269,18 @@ class Application(tk.Tk):
     def on_closing(self):
         if messagebox.askokcancel("Sair", "Você realmente deseja sair?"):
             self.destroy()
+
+    def check_internet_connection(self):
+        def update_status():
+            while True:
+                try:
+                    requests.get('https://www.google.com', timeout=5)
+                    self.internet_status_label.config(text="Internet: Online", fg="green")
+                except requests.ConnectionError:
+                    self.internet_status_label.config(text="Internet: Offline", fg="red")
+                time.sleep(10)
+
+        threading.Thread(target=update_status, daemon=True).start()
 
 if __name__ == "__main__":
     app = Application()
