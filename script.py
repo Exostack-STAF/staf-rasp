@@ -9,6 +9,7 @@ import logging
 from dotenv import load_dotenv
 import tkinter as tk
 from tkinter import scrolledtext, messagebox, ttk
+from tkinter import font as tkfont
 from pynput import keyboard
 import socket
 
@@ -43,11 +44,12 @@ class Application(tk.Tk):
         self.attributes("-fullscreen", True)  # Definir para tela cheia
         self.bind("<Escape>", self.exit_fullscreen)  # Tecla Esc para sair da tela cheia
 
+        self.custom_font = tkfont.Font(family="Helvetica", size=12)
         self.create_widgets()
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.display_mac_address()
 
-        self.internet_status_label = tk.Label(self, text="Verificando conexão...", font=("Arial", 20), fg="gray")
+        self.internet_status_label = tk.Label(self, text="Verificando conexão...", font=self.custom_font, fg="gray")
         self.internet_status_label.pack(anchor='ne', padx=10, pady=10)
         self.check_internet_connection()
 
@@ -67,36 +69,36 @@ class Application(tk.Tk):
         self.main_frame = ttk.Frame(self.notebook)
         self.notebook.add(self.main_frame, text='Principal')
 
-        self.label = tk.Label(self.main_frame, text="Digite o código de barras:")
+        self.label = tk.Label(self.main_frame, text="Digite o código de barras:", font=self.custom_font)
         self.label.pack(pady=10)
 
-        self.barcode_entry = tk.Entry(self.main_frame, width=50, state='disabled')  # Cria um widget de entrada desabilitado
+        self.barcode_entry = tk.Entry(self.main_frame, width=50, state='disabled', font=self.custom_font)  # Cria um widget de entrada desabilitado
         self.barcode_entry.pack(pady=10)
 
-        self.log_area = scrolledtext.ScrolledText(self.main_frame, wrap=tk.WORD, width=100, height=20)
+        self.log_area = scrolledtext.ScrolledText(self.main_frame, wrap=tk.WORD, width=100, height=20, font=self.custom_font)
         self.log_area.pack(pady=10)
         self.log_area.insert(tk.END, "Logs:\n")
 
         # Botão para sair do modo de tela cheia
-        self.exit_fullscreen_button = tk.Button(self.main_frame, text="Sair do modo de tela cheia", command=self.exit_fullscreen)
+        self.exit_fullscreen_button = tk.Button(self.main_frame, text="Sair do modo de tela cheia", command=self.exit_fullscreen, font=self.custom_font)
         self.exit_fullscreen_button.pack(pady=10)
 
         # Aba de configuração
         self.config_frame = ttk.Frame(self.notebook)
         self.notebook.add(self.config_frame, text='Configuração')
 
-        self.env_text = scrolledtext.ScrolledText(self.config_frame, wrap=tk.WORD, width=150, height=40)
+        self.env_text = scrolledtext.ScrolledText(self.config_frame, wrap=tk.WORD, width=150, height=40, font=self.custom_font)
         self.env_text.pack(pady=10)
         self.load_env()
 
-        self.save_button = tk.Button(self.config_frame, text="Salvar .env", command=self.save_env)
+        self.save_button = tk.Button(self.config_frame, text="Salvar .env", command=self.save_env, font=self.custom_font)
         self.save_button.pack(pady=10)
 
         # Aba de códigos não enviados
         self.failed_frame = ttk.Frame(self.notebook)
         self.notebook.add(self.failed_frame, text='Códigos Não Enviados')
 
-        self.failed_list = scrolledtext.ScrolledText(self.failed_frame, wrap=tk.WORD, width=150, height=40)
+        self.failed_list = scrolledtext.ScrolledText(self.failed_frame, wrap=tk.WORD, width=150, height=40, font=self.custom_font)
         self.failed_list.pack(pady=10)
         self.failed_list.insert(tk.END, "Códigos de Barras Não Enviados:\n")
 
@@ -118,7 +120,7 @@ class Application(tk.Tk):
         local_ip = self.get_local_ip()
         local_network_ip = self.get_local_network_ip()
         if mac_address and public_ip and local_ip and local_network_ip:
-            self.mac_label = tk.Label(self, text=f"MAC: {mac_address}\nIP Público: {public_ip}\nIP Local: {local_ip}\nIP Rede Local: {local_network_ip}", font=("Arial", 20), fg="gray")
+            self.mac_label = tk.Label(self, text=f"MAC: {mac_address}\nIP Público: {public_ip}\nIP Local: {local_ip}\nIP Rede Local: {local_network_ip}", font=self.custom_font, fg="gray")
             self.mac_label.pack(anchor='ne', padx=10, pady=10)  # Posiciona no canto superior direito
 
     def get_public_ip(self):
