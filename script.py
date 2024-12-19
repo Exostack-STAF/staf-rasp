@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 import tkinter as tk
 from tkinter import scrolledtext, messagebox, ttk
 from pynput import keyboard
+import socket
 
 # Carregar variáveis de ambiente do arquivo .env
 load_dotenv()
@@ -110,10 +111,11 @@ class Application(tk.Tk):
             self.log(f"Tecla especial pressionada: {key}")
 
     def display_mac_address(self):
-        """Exibe o MAC Address no canto superior direito da janela."""
+        """Exibe o MAC Address e o IP Address no canto superior direito da janela."""
         mac_address = self.get_mac_address()
-        if mac_address:
-            self.mac_label = tk.Label(self, text=f"MAC Address: {mac_address}", font=("Arial", 30), fg="gray")
+        ip_address = self.get_ip_address()
+        if mac_address and ip_address:
+            self.mac_label = tk.Label(self, text=f"MAC Address: {mac_address}\nIP Address: {ip_address}", font=("Arial", 30), fg="gray")
             self.mac_label.pack(anchor='ne', padx=10, pady=10)  # Posiciona no canto superior direito
 
     def exit_fullscreen(self, event=None):
@@ -166,6 +168,15 @@ class Application(tk.Tk):
         except Exception as e:
             self.log(f"Erro ao obter o MAC address: {e}")
             return None
+
+    def get_ip_address(self):
+        try:
+            ip_address = socket.gethostbyname(socket.gethostname())
+            self.log(f"IP Address: {ip_address}")
+            return ip_address
+        except Exception as e:
+            self.log(f"Erro ao obter o IP address: {e}")
+            return None
     
     def insert_data(self, raspberry_id, codigobarras, filial_id):
         data_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -173,7 +184,8 @@ class Application(tk.Tk):
             'raspberry_id': RASPBERRY_ID,
             'codigo_barras': codigobarras,
             'data_time': data_time,
-            'filial_id': FILIAL_ID
+            'filial_id': FILIAL_ID,
+            'mac_address': self.get_mac_address()
         }
 
         def send_data():
