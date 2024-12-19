@@ -20,6 +20,10 @@ def handle_failed_request(data):
     logging.warning(f"Data saved locally for retry: {data}")
 
 def read_csv_and_send_data():
+    if os.stat(CSV_FILE_PATH).st_size == 0:
+        logging.info(f"CSV file {CSV_FILE_PATH} is empty. Exiting.")
+        return
+
     with open(CSV_FILE_PATH, mode='r') as file:
         csv_reader = csv.DictReader(file)
         for row in csv_reader:
