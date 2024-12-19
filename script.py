@@ -217,28 +217,37 @@ class Application(tk.Tk):
         }
 
         def send_data():
+            if not self.is_internet_available():
+                self.log("Sem conexão com a internet. Salvando no CSV.")
+                self.backup_data_csv(raspberry_id, codigobarras, filial_id, data_time)
+                self.failed_barcodes.append(payload)
+                self.update_failed_list()
+                return
+
             try:
                 response = requests.post(LARAVEL_STORE_ENDPOINT, json=payload)
-                
                 if response.status_code == 200:
                     success_message = response.json().get('message', 'Dados enviados com sucesso')
                     self.log(success_message)
                 else:
-                    error_message = response.json().get('message', 'Erro desconhecido')
-                    self.log(f"Erro ao enviar dados: {response.status_code} - {error_message}")
+                    self.log(f"Erro ao enviar dados: {response.status_code}")
                     self.backup_data_csv(raspberry_id, codigobarras, filial_id, data_time)
                     self.failed_barcodes.append(payload)
                     self.update_failed_list()
-
-            except requests.exceptions.RequestException as e:
-                error_message = str(e).split(':')[-1].strip()
-                self.log(f"Erro ao tentar conectar com o endpoint: {error_message}")
+            except requests.exceptions.RequestException:
+                self.log("Erro ao tentar conectar com o endpoint.")
                 self.backup_data_csv(raspberry_id, codigobarras, filial_id, data_time)
                 self.failed_barcodes.append(payload)
                 self.update_failed_list()
 
-        # Inicia a thread para enviar os dados
         threading.Thread(target=send_data).start()
+
+    def is_internet_available(self):
+        try:
+            requests.get('https://www.google.com', timeout=5)
+            return True
+        except requests.ConnectionError:
+            return False
 
     def update_failed_list(self):
         self.failed_list.delete(1.0, tk.END)
