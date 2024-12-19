@@ -46,8 +46,6 @@ class Application(tk.Tk):
         self.create_widgets()
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.display_mac_address()
-        self.display_public_ip()
-        self.display_local_ip()
 
         # Iniciar listener de teclas
         self.listener = keyboard.Listener(on_press=self.on_key_press)
@@ -110,25 +108,14 @@ class Application(tk.Tk):
             self.log(f"Erro: {e}")
 
     def display_mac_address(self):
-        """Exibe o MAC Address no canto superior direito da janela."""
+        """Exibe o MAC Address, IP público, IP local e IP da rede local no canto superior direito da janela."""
         mac_address = self.get_mac_address()
-        if mac_address:
-            self.mac_label = tk.Label(self, text=f"MAC Address: {mac_address}", font=("Arial", 30), fg="gray")
-            self.mac_label.pack(anchor='ne', padx=10, pady=10)  # Posiciona no canto superior direito
-
-    def display_public_ip(self):
-        """Exibe o IP público no canto superior direito da janela."""
         public_ip = self.get_public_ip()
-        if public_ip:
-            self.ip_label = tk.Label(self, text=f"IP Público: {public_ip}", font=("Arial", 30), fg="gray")
-            self.ip_label.pack(anchor='ne', padx=10, pady=10)  # Posiciona no canto superior direito
-
-    def display_local_ip(self):
-        """Exibe o IP local no canto superior direito da janela."""
         local_ip = self.get_local_ip()
-        if local_ip:
-            self.local_ip_label = tk.Label(self, text=f"IP Local: {local_ip}", font=("Arial", 30), fg="gray")
-            self.local_ip_label.pack(anchor='ne', padx=10, pady=10)  # Posiciona no canto superior direito
+        local_network_ip = self.get_local_network_ip()
+        if mac_address and public_ip and local_ip and local_network_ip:
+            self.mac_label = tk.Label(self, text=f"MAC: {mac_address}\nIP Público: {public_ip}\nIP Local: {local_ip}\nIP Rede Local: {local_network_ip}", font=("Arial", 20), fg="gray")
+            self.mac_label.pack(anchor='ne', padx=10, pady=10)  # Posiciona no canto superior direito
 
     def get_public_ip(self):
         try:
@@ -148,6 +135,28 @@ class Application(tk.Tk):
             return local_ip
         except Exception as e:
             self.log(f"Erro ao obter o IP local: {e}")
+            return None
+
+    def get_router_ip(self):
+        try:
+            router_ip = socket.gethostbyname(socket.gethostname() + ".local")
+            self.log(f"IP do Roteador: {router_ip}")
+            return router_ip
+        except Exception as e:
+            self.log(f"Erro ao obter o IP do roteador: {e}")
+            return None
+
+    def get_local_network_ip(self):
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.settimeout(0)
+            s.connect(('192.168.1.1', 1))  # Pode ser qualquer IP na rede local
+            local_network_ip = s.getsockname()[0]
+            s.close()
+            self.log(f"IP da Rede Local: {local_network_ip}")
+            return local_network_ip
+        except Exception as e:
+            self.log(f"Erro ao obter o IP da rede local: {e}")
             return None
 
     def exit_fullscreen(self, event=None):
