@@ -60,14 +60,24 @@ class Application(tk.Tk):
         self.notebook.add(self.main_frame, text='Principal')
 
         self.label = tk.Label(self.main_frame, text="Digite o código de barras:", font=self.custom_font)
-        self.label.pack(pady=10)
+        self.label.grid(row=0, column=0, padx=10, pady=10, sticky='w')
 
         self.barcode_entry = tk.Entry(self.main_frame, width=50, state='disabled', font=self.custom_font)  # Cria um widget de entrada desabilitado
-        self.barcode_entry.pack(pady=10)
+        self.barcode_entry.grid(row=0, column=1, padx=10, pady=10, sticky='w')
+
+        self.endpoint_label = tk.Label(self.main_frame, text="LARAVEL_STORE_ENDPOINT:", font=self.custom_font)
+        self.endpoint_label.grid(row=1, column=0, padx=10, pady=10, sticky='w')
+
+        self.endpoint_entry = tk.Entry(self.main_frame, width=50, font=self.custom_font)
+        self.endpoint_entry.grid(row=1, column=1, padx=10, pady=10, sticky='w')
+        self.endpoint_entry.insert(0, LARAVEL_STORE_ENDPOINT)
+
+        self.save_endpoint_button = tk.Button(self.main_frame, text="Salvar Endpoint", command=self.save_endpoint, font=self.custom_font)
+        self.save_endpoint_button.grid(row=1, column=2, padx=10, pady=10, sticky='w')
 
         # Frame para logs lado a lado
         self.log_frame = ttk.Frame(self.main_frame)
-        self.log_frame.pack(pady=10, fill='both', expand=True)
+        self.log_frame.grid(row=2, column=0, columnspan=3, padx=10, pady=10, sticky='nsew')
 
         self.log_area = scrolledtext.ScrolledText(self.log_frame, wrap=tk.WORD, width=50, height=20, font=self.custom_font)
         self.log_area.pack(side='left', padx=5, pady=5, fill='both', expand=True)
@@ -79,26 +89,23 @@ class Application(tk.Tk):
 
         # Botão para sair do modo de tela cheia
         self.exit_fullscreen_button = tk.Button(self.main_frame, text="Sair do modo de tela cheia", command=self.exit_fullscreen, font=self.custom_font)
-        self.exit_fullscreen_button.pack(pady=10)
+        self.exit_fullscreen_button.grid(row=3, column=0, columnspan=3, padx=10, pady=10, sticky='w')
 
-        # Aba de configuração
-        self.config_frame = ttk.Frame(self.notebook)
-        self.notebook.add(self.config_frame, text='Configuração')
-
-        self.env_text = scrolledtext.ScrolledText(self.config_frame, wrap=tk.WORD, width=150, height=40, font=self.custom_font)
-        self.env_text.pack(pady=10)
-        self.load_env()
-
-        self.save_button = tk.Button(self.config_frame, text="Salvar .env", command=self.save_env, font=self.custom_font)
-        self.save_button.pack(pady=10)
-
-        # Aba de códigos não enviados
-        self.failed_frame = ttk.Frame(self.notebook)
-        self.notebook.add(self.failed_frame, text='Códigos Não Enviados')
-
-        self.failed_list = scrolledtext.ScrolledText(self.failed_frame, wrap=tk.WORD, width=150, height=40, font=self.custom_font)
-        self.failed_list.pack(pady=10)
-        self.failed_list.insert(tk.END, "Códigos de Barras Não Enviados:\n")
+    def save_endpoint(self):
+        new_endpoint = self.endpoint_entry.get().strip()
+        if new_endpoint:
+            os.environ['LARAVEL_STORE_ENDPOINT'] = new_endpoint
+            with open('.env', 'r') as file:
+                lines = file.readlines()
+            with open('.env', 'w') as file:
+                for line in lines:
+                    if line.startswith('LARAVEL_STORE_ENDPOINT'):
+                        file.write(f'LARAVEL_STORE_ENDPOINT={new_endpoint}\n')
+                    else:
+                        file.write(line)
+            messagebox.showinfo("Sucesso", "Endpoint salvo com sucesso!")
+        else:
+            messagebox.showerror("Erro", "O endpoint não pode estar vazio.")
 
     def on_key_press(self, key):
         try:
