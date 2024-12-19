@@ -47,6 +47,7 @@ class Application(tk.Tk):
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.display_mac_address()
         self.display_public_ip()
+        self.display_local_ip()
 
         # Iniciar listener de teclas
         self.listener = keyboard.Listener(on_press=self.on_key_press)
@@ -122,6 +123,13 @@ class Application(tk.Tk):
             self.ip_label = tk.Label(self, text=f"IP Público: {public_ip}", font=("Arial", 30), fg="gray")
             self.ip_label.pack(anchor='ne', padx=10, pady=10)  # Posiciona no canto superior direito
 
+    def display_local_ip(self):
+        """Exibe o IP local no canto superior direito da janela."""
+        local_ip = self.get_local_ip()
+        if local_ip:
+            self.local_ip_label = tk.Label(self, text=f"IP Local: {local_ip}", font=("Arial", 30), fg="gray")
+            self.local_ip_label.pack(anchor='ne', padx=10, pady=10)  # Posiciona no canto superior direito
+
     def get_public_ip(self):
         try:
             response = requests.get('https://api.ipify.org?format=json')
@@ -130,6 +138,16 @@ class Application(tk.Tk):
             return ip_address
         except Exception as e:
             self.log(f"Erro ao obter o IP público: {e}")
+            return None
+
+    def get_local_ip(self):
+        try:
+            hostname = socket.gethostname()
+            local_ip = socket.gethostbyname(hostname)
+            self.log(f"IP Local: {local_ip}")
+            return local_ip
+        except Exception as e:
+            self.log(f"Erro ao obter o IP local: {e}")
             return None
 
     def exit_fullscreen(self, event=None):
