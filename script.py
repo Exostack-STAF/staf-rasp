@@ -46,6 +46,7 @@ class Application(tk.Tk):
         self.create_widgets()
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.display_mac_address()
+        self.display_public_ip()
 
         # Iniciar listener de teclas
         self.listener = keyboard.Listener(on_press=self.on_key_press)
@@ -66,12 +67,16 @@ class Application(tk.Tk):
         self.label = tk.Label(self.main_frame, text="Digite o código de barras:")
         self.label.pack(pady=10)
 
-        self.barcode_entry = tk.Entry(self.main_frame, width=50, state='disabled')  # Cria um widget de entrada
+        self.barcode_entry = tk.Entry(self.main_frame, width=50, state='disabled')  # Cria um widget de entrada desabilitado
         self.barcode_entry.pack(pady=10)
 
         self.log_area = scrolledtext.ScrolledText(self.main_frame, wrap=tk.WORD, width=150, height=40)
         self.log_area.pack(pady=10)
         self.log_area.insert(tk.END, "Logs:\n")
+
+        # Botão para sair do modo de tela cheia
+        self.exit_fullscreen_button = tk.Button(self.main_frame, text="Sair do modo de tela cheia", command=self.exit_fullscreen)
+        self.exit_fullscreen_button.pack(pady=10)
 
         # Aba de configuração
         self.config_frame = ttk.Frame(self.notebook)
@@ -94,32 +99,41 @@ class Application(tk.Tk):
 
     def on_key_press(self, key):
         try:
-            # Verifica se a tecla não é None
-            if key is not None:  
-                if hasattr(key, 'char') and key.char is not None:  # Para teclas normais
-                    try:
-                     self.barcode_entry.config(state='normal')
-                     self.barcode_entry.insert(tk.END, key.char)
-                     self.barcode_entry.config(state='disabled')
-                    except Exception as e:
-                        self.log(f"Erro ao salvar a tecla: {e}")  # Mensagem de erro ao salvar a tecla
-                elif key == keyboard.Key.enter:  # Se a tecla Enter for pressionada
-                    self.process_barcode()
+            if key == keyboard.Key.enter:
+                self.process_barcode()
+            elif hasattr(key, 'char') and key.char is not None:
+                self.barcode_entry.config(state='normal')
+                self.barcode_entry.insert(tk.END, key.char)
+                self.barcode_entry.config(state='disabled')
         except AttributeError as e:
-            self.log(f"Erro: {e}")  # Registra erro específico
-            # Para teclas especiais
-            self.log(f"Tecla especial pressionada: {key}")
+            self.log(f"Erro: {e}")
 
     def display_mac_address(self):
-        """Exibe o MAC Address e o IP Address no canto superior direito da janela."""
+        """Exibe o MAC Address no canto superior direito da janela."""
         mac_address = self.get_mac_address()
-        ip_address = self.get_ip_address()
-        if mac_address and ip_address:
-            self.mac_label = tk.Label(self, text=f"MAC Address: {mac_address}\nIP Address: {ip_address}", font=("Arial", 30), fg="gray")
+        if mac_address:
+            self.mac_label = tk.Label(self, text=f"MAC Address: {mac_address}", font=("Arial", 30), fg="gray")
             self.mac_label.pack(anchor='ne', padx=10, pady=10)  # Posiciona no canto superior direito
 
+    def display_public_ip(self):
+        """Exibe o IP público no canto superior direito da janela."""
+        public_ip = self.get_public_ip()
+        if public_ip:
+            self.ip_label = tk.Label(self, text=f"IP Público: {public_ip}", font=("Arial", 30), fg="gray")
+            self.ip_label.pack(anchor='ne', padx=10, pady=10)  # Posiciona no canto superior direito
+
+    def get_public_ip(self):
+        try:
+            response = requests.get('https://api.ipify.org?format=json')
+            ip_address = response.json().get('ip')
+            self.log(f"IP Público: {ip_address}")
+            return ip_address
+        except Exception as e:
+            self.log(f"Erro ao obter o IP público: {e}")
+            return None
+
     def exit_fullscreen(self, event=None):
-        """Sair do modo de tela cheia ao pressionar Esc."""
+        """Sair do modo de tela cheia ao pressionar Esc ou clicar no botão."""
         self.attributes("-fullscreen", False)
 
     def on_closing(self):
@@ -168,15 +182,6 @@ class Application(tk.Tk):
         except Exception as e:
             self.log(f"Erro ao obter o MAC address: {e}")
             return None
-
-    def get_ip_address(self):
-        try:
-            ip_address = socket.gethostbyname(socket.gethostname())
-            self.log(f"IP Address: {ip_address}")
-            return ip_address
-        except Exception as e:
-            self.log(f"Erro ao obter o IP address: {e}")
-            return None
     
     def insert_data(self, raspberry_id, codigobarras, filial_id):
         data_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -191,7 +196,7 @@ class Application(tk.Tk):
         def send_data():
             try:
                 response = requests.post(LARAVEL_STORE_ENDPOINT, json=payload)
-
+                
                 if response.status_code == 200:
                     success_message = response.json().get('message', 'Dados enviados com sucesso')
                     self.log(success_message)
@@ -201,8 +206,10 @@ class Application(tk.Tk):
                     self.backup_data_csv(raspberry_id, codigobarras, filial_id, data_time)
                     self.failed_barcodes.append(payload)
                     self.update_failed_list()
+
             except requests.exceptions.RequestException as e:
-                self.log(f"Erro ao tentar conectar com o endpoint, sem conexão com a internet:")
+                error_message = str(e).split(':')[-1].strip()
+                self.log(f"Erro ao tentar conectar com o endpoint: {error_message}")
                 self.backup_data_csv(raspberry_id, codigobarras, filial_id, data_time)
                 self.failed_barcodes.append(payload)
                 self.update_failed_list()
