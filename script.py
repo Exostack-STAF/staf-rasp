@@ -262,8 +262,8 @@ class Application(tk.Tk):
             with open(CSV_FILE_PATH, mode='a', newline='') as file:
                 writer = csv.writer(file)
                 if not file_exists:
-                    writer.writerow(['timestamp', 'raspberry_id', 'codigobarras', 'filial_id'])
-                writer.writerow([data_time, raspberry_id, codigobarras, filial_id])
+                    writer.writerow(['timestamp', 'raspberry_id', 'codigobarras', 'filial_id', 'mac_address'])
+                writer.writerow([data_time, raspberry_id, codigobarras, filial_id, self.get_mac_address()])
             self.log("Dados salvos localmente no CSV")
         except Exception as e:
             self.log(f"Erro ao salvar dados no CSV: {e}")
@@ -284,6 +284,21 @@ class Application(tk.Tk):
 
         threading.Thread(target=update_status, daemon=True).start()
 
+    def retry_failed_barcodes(self):
+        for payload in self.failed_barcodes:
+            try:
+                response = requests.post(LARAVEL_STORE_ENDPOINT, json=payload)
+                if response.status_code == 200:
+                    self.log(f"Retried successfully: {payload['codigo_barras']}")
+                    self.failed_barcodes.remove(payload)
+                else:
+                    self.log(f"Retry failed: {payload['codigo_barras']}, Status code: {response.status_code}")
+            except requests.exceptions.RequestException as e:
+                self.log(f"Retry error: {payload['codigo_barras']}, Error: {e}")
+
+        self.update_failed_list()
+
 if __name__ == "__main__":
     app = Application()
+    app.after(60000, app.retry_failed_barcodes)  # Retry every 60 seconds
     app.mainloop()
