@@ -26,7 +26,7 @@ def read_csv_and_send_data():
                 'raspberry_id': row['raspberry_id'],
                 'codigo_barras': row['codigobarras'],
                 'filial_id': row['filial_id'],
-                'mac_address': row['mac_address']
+               
             }
             response = requests.post(ENDPOINT_URL, json=data)
             if response.status_code == 200:
