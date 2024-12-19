@@ -40,6 +40,4 @@ def read_csv_and_send_data():
     print(f"CSV file {CSV_FILE_PATH} deleted.")
 
 if __name__ == "__main__":
-    while True:
-        read_csv_and_send_data()
-        time.sleep(3600)  # Espera por 1 hora (3600 segundos)
+    read_csv_and_send_data()
