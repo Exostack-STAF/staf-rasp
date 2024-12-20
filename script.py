@@ -35,6 +35,13 @@ class Application(tk.Tk):
         self.bind("<Escape>", self.exit_fullscreen)  # Tecla Esc para sair da tela cheia
 
         self.custom_font = tkfont.Font(family="Helvetica", size=12)
+        
+        self.last_sent_timestamp = tk.StringVar()
+        self.last_sent_timestamp.set(f"Último envio dos códigos de barras em modo offline: {self.get_last_sent_timestamp()}")
+        
+        self.current_timestamp = tk.StringVar()
+        self.update_current_timestamp()
+        
         self.create_widgets()
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.display_mac_address()
@@ -73,12 +80,27 @@ class Application(tk.Tk):
         self.barcode_log_area.pack(side='right', padx=5, pady=5, fill='both', expand=True)
         self.barcode_log_area.insert(tk.END, "Códigos de Barras:\n")
 
+        # New log area for unsent barcodes
+        self.unsent_barcode_log_area = scrolledtext.ScrolledText(self.log_frame, wrap=tk.WORD, width=50, height=20, font=self.custom_font)
+        self.unsent_barcode_log_area.pack(side='right', padx=5, pady=5, fill='both', expand=True)
+        self.unsent_barcode_log_area.insert(tk.END, "Códigos de Barras Não Enviados:\n")
+
         # Frame para informações de rede
         self.network_info_frame = ttk.Frame(self.main_frame)
         self.network_info_frame.grid(row=2, column=0, columnspan=2, padx=10, pady=10, sticky='nsew')
 
         self.network_info_label = tk.Label(self.network_info_frame, text="", font=self.custom_font, fg="gray")
         self.network_info_label.pack(anchor='ne', padx=10, pady=10)
+
+        # Indicator for system online status
+        self.internet_status_label = tk.Label(self.network_info_frame, text="Internet: Offline", font=self.custom_font, fg="red")
+        self.internet_status_label.pack(anchor='ne', padx=10, pady=10)
+
+        self.current_timestamp_label = tk.Label(self.network_info_frame, textvariable=self.current_timestamp, font=self.custom_font, fg="yellow")
+        self.current_timestamp_label.pack(anchor='ne', padx=10, pady=10)
+
+        self.last_sent_label = tk.Label(self.network_info_frame, textvariable=self.last_sent_timestamp, font=self.custom_font, fg="gray")
+        self.last_sent_label.pack(anchor='ne', padx=10, pady=10)
 
         # Botão para sair do modo de tela cheia
         self.exit_fullscreen_button = tk.Button(self.main_frame, text="Sair do modo de tela cheia", command=self.exit_fullscreen, font=self.custom_font)
@@ -91,23 +113,21 @@ class Application(tk.Tk):
         self.config_label = tk.Label(self.config_frame, text="Configurações do .env", font=self.custom_font)
         self.config_label.grid(row=0, column=0, padx=10, pady=10, sticky='w')
 
-        self.laravel_endpoint_label = tk.Label(self.config_frame, text="Url do Sistema:", font=self.custom_font)
+        self.laravel_endpoint_label = tk.Label(self.config_frame, text="URL do Sistema:", font=self.custom_font)
         self.laravel_endpoint_label.grid(row=1, column=0, padx=10, pady=10, sticky='w')
         self.laravel_endpoint_entry = tk.Entry(self.config_frame, width=50, font=self.custom_font)
         self.laravel_endpoint_entry.grid(row=1, column=1, padx=10, pady=10, sticky='w')
         self.laravel_endpoint_entry.insert(0, LARAVEL_STORE_ENDPOINT)
 
         self.raspberry_id_label = tk.Label(self.config_frame, text="RASPBERRY_ID:", font=self.custom_font)
-        self.raspberry_id_label.grid(row=2, column=0, padx=10, pady=10, sticky='w')
+        self.raspberry_id_label.grid_forget()  # Hide the label
         self.raspberry_id_entry = tk.Entry(self.config_frame, width=50, font=self.custom_font)
-        self.raspberry_id_entry.grid(row=2, column=1, padx=10, pady=10, sticky='w')
-        self.raspberry_id_entry.insert(0, RASPBERRY_ID)
+        self.raspberry_id_entry.grid_forget()  # Hide the entry
 
         self.filial_id_label = tk.Label(self.config_frame, text="FILIAL_ID:", font=self.custom_font)
-        self.filial_id_label.grid(row=3, column=0, padx=10, pady=10, sticky='w')
+        self.filial_id_label.grid_forget()  # Hide the label
         self.filial_id_entry = tk.Entry(self.config_frame, width=50, font=self.custom_font)
-        self.filial_id_entry.grid(row=3, column=1, padx=10, pady=10, sticky='w')
-        self.filial_id_entry.insert(0, FILIAL_ID)
+        self.filial_id_entry.grid_forget()  # Hide the entry
 
         self.save_config_button = tk.Button(self.config_frame, text="Salvar Configurações", command=self.save_config, font=self.custom_font)
         self.save_config_button.grid(row=4, column=0, columnspan=2, padx=10, pady=10, sticky='w')
@@ -136,23 +156,23 @@ class Application(tk.Tk):
 
     def save_config(self):
         new_laravel_endpoint = self.laravel_endpoint_entry.get().strip()
-        new_raspberry_id = self.raspberry_id_entry.get().strip()
-        new_filial_id = self.filial_id_entry.get().strip()
+        # Remove the retrieval of new_raspberry_id and new_filial_id
+        # new_raspberry_id = self.raspberry_id_entry.get().strip()
+        # new_filial_id = self.filial_id_entry.get().strip()
 
-        if new_laravel_endpoint and new_raspberry_id and new_filial_id:
+        if new_laravel_endpoint:
             os.environ['LARAVEL_STORE_ENDPOINT'] = new_laravel_endpoint
-            os.environ['RASPBERRY_ID'] = new_raspberry_id
-            os.environ['FILIAL_ID'] = new_filial_id
             with open('.env', 'r') as file:
                 lines = file.readlines()
             with open('.env', 'w') as file:
                 for line in lines:
                     if line.startswith('LARAVEL_STORE_ENDPOINT'):
                         file.write(f'LARAVEL_STORE_ENDPOINT={new_laravel_endpoint}\n')
-                    elif line.startswith('RASPBERRY_ID'):
-                        file.write(f'RASPBERRY_ID={new_raspberry_id}\n')
-                    elif line.startswith('FILIAL_ID'):
-                        file.write(f'FILIAL_ID={new_filial_id}\n')
+                    # Remove the lines for RASPBERRY_ID and FILIAL_ID
+                    # elif line.startswith('RASPBERRY_ID'):
+                    #     file.write(f'RASPBERRY_ID={new_raspberry_id}\n')
+                    # elif line.startswith('FILIAL_ID'):
+                    #     file.write(f'FILIAL_ID={new_filial_id}\n')
                     else:
                         file.write(line)
             messagebox.showinfo("Sucesso", "Configurações salvas com sucesso!")
@@ -184,7 +204,6 @@ class Application(tk.Tk):
             s.connect(('192.168.1.1', 1))  # Pode ser qualquer IP na rede local
             local_network_ip = s.getsockname()[0]
             s.close()
-            self.log(f"IP da Rede Local: {local_network_ip}")
             return local_network_ip
         except Exception as e:
             self.log(f"Erro ao obter o IP da rede local: {e}")
@@ -195,7 +214,7 @@ class Application(tk.Tk):
         self.attributes("-fullscreen", False)
 
     def on_closing(self):
-        if messagebox.askokcancel("Sair", "Tem certeza que deseja sair?"):
+        if messagebox.askokcancel("Sair", "Tem certeza de que deseja sair?"):
             self.destroy()
 
     def load_env(self):
@@ -220,8 +239,9 @@ class Application(tk.Tk):
 
     def process_barcode(self, event=None):
         barcode = self.barcode_entry.get().strip()
+        timestamp = datetime.now().strftime('%H:%M')
    
-        self.barcode_log_area.insert(tk.END, f"Codigo: {barcode}\n")
+        self.barcode_log_area.insert(tk.END, f"Codigo: {barcode} - {timestamp}\n")
         self.barcode_log_area.see(tk.END)
    
         if not barcode:
@@ -236,7 +256,6 @@ class Application(tk.Tk):
         try:
             mac = uuid.getnode()
             mac_address = ':'.join(("%012X" % mac)[i:i+2] for i in range(0, 12, 2))
-            self.log(f"MAC Address: {mac_address}")
             return mac_address
         except Exception as e:
             self.log(f"Erro ao obter o MAC address: {e}")
@@ -265,6 +284,7 @@ class Application(tk.Tk):
                 if response.status_code == 200:
                     success_message = response.json().get('message', 'Dados enviados com sucesso')
                     self.log(success_message)
+                    self.update_last_sent_timestamp(data_time)
                 else:
                     self.log(f"Erro ao enviar dados: {response.status_code}")
                     self.backup_data_csv(raspberry_id, codigobarras, filial_id, data_time)
@@ -278,6 +298,20 @@ class Application(tk.Tk):
 
         threading.Thread(target=send_data).start()
 
+    def update_last_sent_timestamp(self, timestamp):
+        self.last_sent_timestamp.set(f"Último envio: {timestamp}")
+        with open('.env', 'r') as file:
+            lines = file.readlines()
+        with open('.env', 'w') as file:
+            for line in lines:
+                if line.startswith('LAST_SENT_TIMESTAMP'):
+                    file.write(f'LAST_SENT_TIMESTAMP={timestamp}\n')
+                else:
+                    file.write(line)
+
+    def get_last_sent_timestamp(self):
+        return os.getenv('LAST_SENT_TIMESTAMP', 'Nunca')
+
     def is_internet_available(self):
         try:
             requests.get('https://www.google.com', timeout=5)
@@ -286,10 +320,10 @@ class Application(tk.Tk):
             return False
 
     def update_failed_list(self):
-        self.failed_list.delete(1.0, tk.END)
-        self.failed_list.insert(tk.END, "Códigos de Barras Não Enviados:\n")
+        self.unsent_barcode_log_area.delete(1.0, tk.END)
+        self.unsent_barcode_log_area.insert(tk.END, "Códigos de Barras Não Enviados:\n")
         for payload in self.failed_barcodes:
-            self.failed_list.insert(tk.END, f"{payload['codigo_barras']} - {payload['data_time']}\n")
+            self.unsent_barcode_log_area.insert(tk.END, f"{payload['codigo_barras']} - {payload['data_time']}\n")
 
     def backup_data_csv(self, raspberry_id, codigobarras, filial_id, data_time):
         try:
@@ -328,16 +362,21 @@ class Application(tk.Tk):
             try:
                 response = requests.post(f"{LARAVEL_STORE_ENDPOINT}/api/raspberry-scan-store", json=payload)
                 if response.status_code == 200:
-                    self.log(f"Retried successfully: {payload['codigo_barras']}")
+                    self.log(f"Reenvio bem-sucedido: {payload['codigo_barras']}")
                     self.failed_barcodes.remove(payload)
                 else:
-                    self.log(f"Retry failed: {payload['codigo_barras']}, Status code: {response.status_code}")
+                    self.log(f"Falha no reenvio: {payload['codigo_barras']}, Código de status: {response.status_code}")
             except requests.exceptions.RequestException as e:
-                self.log(f"Retry error: {payload['codigo_barras']}, Error: {e}")
+                self.log(f"Erro no reenvio: {payload['codigo_barras']}, Erro: {e}")
 
         self.update_failed_list()
 
+    def update_current_timestamp(self):
+        self.current_timestamp.set(f"Data Hora Atual: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        self.after(1000, self.update_current_timestamp)
+
 if __name__ == "__main__":
     app = Application()
+    app.check_internet_connection()  # Start checking internet connection
     app.after(60000, app.retry_failed_barcodes)  # Retry every 60 seconds
     app.mainloop()

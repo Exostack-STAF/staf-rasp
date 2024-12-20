@@ -19,6 +19,11 @@ def handle_failed_request(data):
         writer.writerow([data['data_time'], data['raspberry_id'], data['codigo_barras'], data['filial_id'], data['mac_address']])
     logging.warning(f"Data saved locally for retry: {data}")
 
+def update_last_sent_timestamp(timestamp):
+    with open('.env', 'a') as env_file:
+        env_file.write(f'\nLAST_SENT_TIMESTAMP={timestamp}')
+    logging.info(f"Updated LAST_SENT_TIMESTAMP in .env: {timestamp}")
+
 def read_csv_and_send_data():
     if os.stat(CSV_FILE_PATH).st_size == 0:
         logging.info(f"CSV file {CSV_FILE_PATH} is empty. Exiting.")
@@ -37,6 +42,7 @@ def read_csv_and_send_data():
             response = requests.post(ENDPOINT_URL, json=data)
             if response.status_code == 200:
                 logging.info(f"Data sent successfully: {data}")
+                update_last_sent_timestamp(data['data_time'])
             else:
                 logging.error(f"Failed to send data: {data}, Status code: {response.status_code}")
                 handle_failed_request(data)
