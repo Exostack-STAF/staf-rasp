@@ -2,7 +2,7 @@ import requests
 import os
 import uuid
 import csv
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 import threading
 import logging
@@ -37,10 +37,14 @@ class Application(tk.Tk):
         self.custom_font = tkfont.Font(family="Helvetica", size=12)
         
         self.last_sent_timestamp = tk.StringVar()
+        self.last_service_send_timestamp = tk.StringVar()
+        self.update_last_service_send_timestamp()
         self.last_sent_timestamp.set(f"Último envio dos códigos de barras em modo offline: {self.get_last_sent_timestamp()}")
         
         self.current_timestamp = tk.StringVar()
         self.update_current_timestamp()
+        
+        self.logo_image = tk.PhotoImage(file="logo.png").subsample(10, 10)  # Resize the logo to be smaller
         
         self.create_widgets()
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -68,26 +72,23 @@ class Application(tk.Tk):
         self.barcode_entry = tk.Entry(self.main_frame, width=50, state='disabled', font=self.custom_font)  # Cria um widget de entrada desabilitado
         self.barcode_entry.grid(row=0, column=1, padx=10, pady=10, sticky='w')
 
+        self.logo_label = tk.Label(self.main_frame, image=self.logo_image)
+        self.logo_label.grid(row=0, column=2, padx=10, pady=10, sticky='w')
+
         # Frame para logs lado a lado
         self.log_frame = ttk.Frame(self.main_frame)
-        self.log_frame.grid(row=1, column=0, columnspan=2, padx=10, pady=10, sticky='nsew')
+        self.log_frame.grid(row=1, column=0, columnspan=3, padx=10, pady=10, sticky='nsew')
 
         self.log_area = scrolledtext.ScrolledText(self.log_frame, wrap=tk.WORD, width=50, height=20, font=self.custom_font)
         self.log_area.pack(side='left', padx=5, pady=5, fill='both', expand=True)
-        self.log_area.insert(tk.END, "Logs:\n")
-
         self.barcode_log_area = scrolledtext.ScrolledText(self.log_frame, wrap=tk.WORD, width=50, height=20, font=self.custom_font)
         self.barcode_log_area.pack(side='right', padx=5, pady=5, fill='both', expand=True)
-        self.barcode_log_area.insert(tk.END, "Códigos de Barras:\n")
-
-        # New log area for unsent barcodes
         self.unsent_barcode_log_area = scrolledtext.ScrolledText(self.log_frame, wrap=tk.WORD, width=50, height=20, font=self.custom_font)
         self.unsent_barcode_log_area.pack(side='right', padx=5, pady=5, fill='both', expand=True)
-        self.unsent_barcode_log_area.insert(tk.END, "Códigos de Barras Não Enviados:\n")
 
         # Frame para informações de rede
         self.network_info_frame = ttk.Frame(self.main_frame)
-        self.network_info_frame.grid(row=2, column=0, columnspan=2, padx=10, pady=10, sticky='nsew')
+        self.network_info_frame.grid(row=2, column=0, columnspan=3, padx=10, pady=10, sticky='nsew')
 
         self.network_info_label = tk.Label(self.network_info_frame, text="", font=self.custom_font, fg="gray")
         self.network_info_label.pack(anchor='ne', padx=10, pady=10)
@@ -102,9 +103,12 @@ class Application(tk.Tk):
         self.last_sent_label = tk.Label(self.network_info_frame, textvariable=self.last_sent_timestamp, font=self.custom_font, fg="gray")
         self.last_sent_label.pack(anchor='ne', padx=10, pady=10)
 
+        self.last_service_send_label = tk.Label(self.network_info_frame, textvariable=self.last_service_send_timestamp, font=self.custom_font, fg="blue")
+        self.last_service_send_label.pack(anchor='ne', padx=10, pady=10)
+
         # Botão para sair do modo de tela cheia
         self.exit_fullscreen_button = tk.Button(self.main_frame, text="Sair do modo de tela cheia", command=self.exit_fullscreen, font=self.custom_font)
-        self.exit_fullscreen_button.grid(row=3, column=0, columnspan=2, padx=10, pady=10, sticky='w')
+        self.exit_fullscreen_button.grid(row=3, column=0, columnspan=3, padx=10, pady=10, sticky='w')
 
         # Aba de configuração
         self.config_frame = ttk.Frame(self.notebook)
@@ -135,7 +139,7 @@ class Application(tk.Tk):
         # Expand all rows and columns to fill the screen
         for i in range(4):
             self.main_frame.grid_rowconfigure(i, weight=1)
-        for i in range(2):
+        for i in range(3):
             self.main_frame.grid_columnconfigure(i, weight=1)
 
     def save_endpoint(self):
@@ -374,6 +378,16 @@ class Application(tk.Tk):
     def update_current_timestamp(self):
         self.current_timestamp.set(f"Data Hora Atual: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         self.after(1000, self.update_current_timestamp)
+
+    def update_last_service_send_timestamp(self):
+        last_sent = self.get_last_sent_timestamp()
+        try:
+            last_sent_dt = datetime.strptime(last_sent, '%d/%m/%Y %H:%M')
+            next_send_dt = last_sent_dt + timedelta(hours=1)
+            self.last_service_send_timestamp.set(f"Último envio: {last_sent}\nPróximo envio: {next_send_dt.strftime('%d/%m/%Y %H:%M')}")
+        except ValueError:
+            self.last_service_send_timestamp.set("Último envio: Nunca\nPróximo envio: Em uma hora após o primeiro envio")
+        self.after(60000, self.update_last_service_send_timestamp)
 
 if __name__ == "__main__":
     app = Application()
