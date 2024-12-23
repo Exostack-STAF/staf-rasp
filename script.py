@@ -75,14 +75,12 @@ class Application(tk.Tk):
         self.logo_label = tk.Label(self.main_frame, image=self.logo_image)
         self.logo_label.grid(row=0, column=2, padx=10, pady=10, sticky='w')
 
-        # Frame para logs lado a lado
+        # Frame para logs
         self.log_frame = ttk.Frame(self.main_frame)
         self.log_frame.grid(row=1, column=0, columnspan=3, padx=10, pady=10, sticky='nsew')
 
         self.log_area = scrolledtext.ScrolledText(self.log_frame, wrap=tk.WORD, width=50, height=20, font=self.custom_font)
         self.log_area.pack(side='left', padx=5, pady=5, fill='both', expand=True)
-        self.barcode_log_area = scrolledtext.ScrolledText(self.log_frame, wrap=tk.WORD, width=50, height=20, font=self.custom_font)
-        self.barcode_log_area.pack(side='right', padx=5, pady=5, fill='both', expand=True)
         self.unsent_barcode_log_area = scrolledtext.ScrolledText(self.log_frame, wrap=tk.WORD, width=50, height=20, font=self.custom_font)
         self.unsent_barcode_log_area.pack(side='right', padx=5, pady=5, fill='both', expand=True)
 
@@ -245,8 +243,8 @@ class Application(tk.Tk):
         barcode = self.barcode_entry.get().strip()
         timestamp = datetime.now().strftime('%H:%M')
    
-        self.barcode_log_area.insert(tk.END, f"Codigo: {barcode} - {timestamp}\n")
-        self.barcode_log_area.see(tk.END)
+        self.log_area.insert(tk.END, f"Codigo: {barcode} - {timestamp}\n")
+        self.log_area.see(tk.END)
    
         if not barcode:
             return
