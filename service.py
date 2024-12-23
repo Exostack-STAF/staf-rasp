@@ -3,6 +3,7 @@ import requests
 from dotenv import load_dotenv
 import os
 import logging
+from datetime import datetime
 
 # Carregar variáveis de ambiente do arquivo .env
 load_dotenv()
@@ -23,6 +24,12 @@ def update_last_sent_timestamp(timestamp):
     with open('/home/kali/staf-rasp/.env', 'a') as env_file:
         env_file.write(f'\nLAST_SENT_TIMESTAMP={timestamp}')
     logging.info(f"Updated LAST_SENT_TIMESTAMP in .env: {timestamp}")
+
+def update_last_execution_timestamp():
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    with open('/home/kali/staf-rasp/.env', 'a') as env_file:
+        env_file.write(f'\nLAST_EXECUTION_TIMESTAMP={timestamp}')
+    logging.info(f"Updated LAST_EXECUTION_TIMESTAMP in .env: {timestamp}")
 
 def read_csv_and_send_data():
     if os.stat(CSV_FILE_PATH).st_size == 0:
@@ -50,6 +57,8 @@ def read_csv_and_send_data():
     # Apagar o arquivo CSV após enviar os dados
     os.remove(CSV_FILE_PATH)
     logging.info(f"CSV file {CSV_FILE_PATH} deleted.")
+    update_last_execution_timestamp()
+    logging.info("Service executed successfully.")
 
 if __name__ == "__main__":
     read_csv_and_send_data()

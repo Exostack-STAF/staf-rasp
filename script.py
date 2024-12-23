@@ -38,7 +38,9 @@ class Application(tk.Tk):
         
         self.last_sent_timestamp = tk.StringVar()
         self.last_service_send_timestamp = tk.StringVar()
+        self.last_service_execution_timestamp = tk.StringVar()  # Move this line here
         self.update_last_service_send_timestamp()
+        self.update_last_service_execution_timestamp()
         self.last_sent_timestamp.set(f"Último envio dos códigos de barras em modo offline: {self.get_last_sent_timestamp()}")
         
         self.current_timestamp = tk.StringVar()
@@ -103,6 +105,9 @@ class Application(tk.Tk):
 
         self.last_service_send_label = tk.Label(self.network_info_frame, textvariable=self.last_service_send_timestamp, font=self.custom_font, fg="blue")
         self.last_service_send_label.pack(anchor='ne', padx=10, pady=10)
+
+        self.last_service_execution_label = tk.Label(self.network_info_frame, textvariable=self.last_service_execution_timestamp, font=self.custom_font, fg="blue")
+        self.last_service_execution_label.pack(anchor='ne', padx=10, pady=10)
 
         # Botão para sair do modo de tela cheia
         self.exit_fullscreen_button = tk.Button(self.main_frame, text="Sair do modo de tela cheia", command=self.exit_fullscreen, font=self.custom_font)
@@ -386,6 +391,11 @@ class Application(tk.Tk):
         except ValueError:
             self.last_service_send_timestamp.set("Último envio: Nunca\nPróximo envio: Em uma hora após o primeiro envio")
         self.after(60000, self.update_last_service_send_timestamp)
+
+    def update_last_service_execution_timestamp(self):
+        last_execution = os.getenv('LAST_EXECUTION_TIMESTAMP', 'Nunca')
+        self.last_service_execution_timestamp.set(f"Última execução do serviço: {last_execution}")
+        self.after(60000, self.update_last_service_execution_timestamp)
 
 if __name__ == "__main__":
     app = Application()
