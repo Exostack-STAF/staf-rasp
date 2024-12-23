@@ -20,7 +20,7 @@ def handle_failed_request(data):
     logging.warning(f"Data saved locally for retry: {data}")
 
 def update_last_sent_timestamp(timestamp):
-    with open('.env', 'a') as env_file:
+    with open('/home/kali/staf-rasp/.env', 'a') as env_file:
         env_file.write(f'\nLAST_SENT_TIMESTAMP={timestamp}')
     logging.info(f"Updated LAST_SENT_TIMESTAMP in .env: {timestamp}")
 
