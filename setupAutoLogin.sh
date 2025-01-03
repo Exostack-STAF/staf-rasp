@@ -127,6 +127,10 @@ EOF"
 
 sudo systemctl enable git-pull.service
 
+# Add cron job to run service.py every hour
+echo "Adding cron job to run service.py every hour..."
+(crontab -l 2>/dev/null; echo "0 * * * * /usr/bin/python3 /home/kali/staf-rasp/service.py") | crontab -
+
 # Reload systemd and enable services
 echo "Reloading systemd and enabling services..."
 sudo systemctl daemon-reload
