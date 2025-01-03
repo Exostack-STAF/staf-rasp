@@ -17,11 +17,19 @@ ExecStart=
 ExecStart=-/sbin/agetty --autologin $USER_NAME --noclear %I \$TERM
 EOF"
 
+# Edit LightDM configuration to enable auto-login
+echo "Configuring LightDM for auto-login..."
+sudo bash -c "cat >> /etc/lightdm/lightdm.conf <<EOF
+[Seat:*]
+autologin-user=$USER_NAME
+autologin-user-timeout=0
+EOF"
+
 # Install dependencies
 echo "Installing dependencies..."
 sudo apt-get update
 sudo apt-get install -y python3-pip python3-tk python3-dotenv
-pip3 install requests python-dotenv pynput
+pip3 install requests python-dotenv pynput --break-system-packages
 
 # Create systemd service for script.py
 echo "Creating systemd service for script.py..."
