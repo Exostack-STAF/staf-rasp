@@ -103,9 +103,10 @@ Exec=python3 $SCRIPT_PATH
 X-GNOME-Autostart-enabled=true
 EOF"
 
-# Ensure script.py has execution permissions
-echo "Setting execution permissions for script.py..."
+# Ensure all .py files have execution permissions
+echo "Setting execution permissions for .py files..."
 chmod +x $SCRIPT_PATH
+chmod +x $SERVICE_PATH
 
 # Perform git pull on every reboot
 echo "Configuring git pull on every reboot..."
