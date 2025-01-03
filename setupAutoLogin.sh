@@ -92,6 +92,21 @@ sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.ta
 echo "Setting timezone to São Paulo..."
 sudo timedatectl set-timezone America/Sao_Paulo
 
+# Configure autostart for script.py
+echo "Configuring autostart for script.py..."
+mkdir -p ~/.config/autostart
+sudo bash -c "cat > ~/.config/autostart/staf-rasp.desktop <<EOF
+[Desktop Entry]
+Type=Application
+Name=STAF-RASP
+Exec=python3 $SCRIPT_PATH
+X-GNOME-Autostart-enabled=true
+EOF"
+
+# Ensure script.py has execution permissions
+echo "Setting execution permissions for script.py..."
+chmod +x $SCRIPT_PATH
+
 # Reload systemd and enable services
 echo "Reloading systemd and enabling services..."
 sudo systemctl daemon-reload
