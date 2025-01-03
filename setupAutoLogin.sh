@@ -107,6 +107,25 @@ EOF"
 echo "Setting execution permissions for script.py..."
 chmod +x $SCRIPT_PATH
 
+# Perform git pull on every reboot
+echo "Configuring git pull on every reboot..."
+sudo bash -c "cat > /etc/systemd/system/git-pull.service <<EOF
+[Unit]
+Description=Perform git pull on reboot
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/git -C $WORKING_DIR pull
+WorkingDirectory=$WORKING_DIR
+User=$USER_NAME
+Group=$USER_NAME
+
+[Install]
+WantedBy=multi-user.target
+EOF"
+
+sudo systemctl enable git-pull.service
+
 # Reload systemd and enable services
 echo "Reloading systemd and enabling services..."
 sudo systemctl daemon-reload
