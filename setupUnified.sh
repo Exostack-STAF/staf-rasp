@@ -79,3 +79,7 @@ sudo systemctl status "$SERVICE_NAME"
 
 echo "Configuração concluída!"
 echo "Você pode verificar o status do timer com: systemctl list-timers --all"
+
+# Reboot the system
+echo "Reiniciando o sistema..."
+sudo reboot
