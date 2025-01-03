@@ -46,7 +46,11 @@ class Application(tk.Tk):
         self.current_timestamp = tk.StringVar()
         self.update_current_timestamp()
         
-        self.logo_image = tk.PhotoImage(file="logo.png").subsample(10, 10)  # Resize the logo to be smaller
+        try:
+            self.logo_image = tk.PhotoImage(file="logo.png").subsample(10, 10)  # Resize the logo to be smaller
+        except tk.TclError:
+            self.logo_image = None
+            logging.error("Logo image not found. Continuing without logo.")
         
         self.create_widgets()
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -74,8 +78,9 @@ class Application(tk.Tk):
         self.barcode_entry = tk.Entry(self.main_frame, width=50, state='disabled', font=self.custom_font)  # Cria um widget de entrada desabilitado
         self.barcode_entry.grid(row=0, column=1, padx=10, pady=10, sticky='w')
 
-        self.logo_label = tk.Label(self.main_frame, image=self.logo_image)
-        self.logo_label.grid(row=0, column=2, padx=10, pady=10, sticky='w')
+        if self.logo_image:
+            self.logo_label = tk.Label(self.main_frame, image=self.logo_image)
+            self.logo_label.grid(row=0, column=2, padx=10, pady=10, sticky='w')
 
         # Frame para logs
         self.log_frame = ttk.Frame(self.main_frame)
