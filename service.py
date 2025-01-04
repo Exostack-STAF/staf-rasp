@@ -14,12 +14,6 @@ logging.basicConfig(filename='/var/log/staf_rasp_service.log', level=logging.INF
 CSV_FILE_PATH = os.getenv('CSV_FILE_PATH')  # Caminho do arquivo CSV
 ENDPOINT_URL = os.getenv('LARAVEL_STORE_ENDPOINT')  # URL do endpoint
 
-def handle_failed_request(data):
-    with open(CSV_FILE_PATH, mode='a', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow([data['data_time'], data['raspberry_id'], data['codigo_barras'], data['filial_id'], data['mac_address']])
-    logging.warning(f"Data saved locally for retry: {data}")
-
 def update_last_sent_timestamp(timestamp):
     with open('/home/kali/staf-rasp/.env', 'a') as env_file:
         env_file.write(f'\nLAST_SENT_TIMESTAMP={timestamp}')
@@ -35,6 +29,8 @@ def read_csv_and_send_data():
     if os.stat(CSV_FILE_PATH).st_size == 0:
         logging.info(f"CSV file {CSV_FILE_PATH} is empty. Exiting.")
         return
+
+    all_data_sent = True
 
     with open(CSV_FILE_PATH, mode='r') as file:
         csv_reader = csv.DictReader(file)
@@ -52,13 +48,15 @@ def read_csv_and_send_data():
                 update_last_sent_timestamp(data['data_time'])
             else:
                 logging.error(f"Failed to send data: {data}, Status code: {response.status_code}")
-                handle_failed_request(data)
+                all_data_sent = False
 
-    # Apagar o arquivo CSV após enviar os dados
-    os.remove(CSV_FILE_PATH)
-    logging.info(f"CSV file {CSV_FILE_PATH} deleted.")
-    update_last_execution_timestamp()
-    logging.info("Service executed successfully.")
+    if all_data_sent:
+        os.remove(CSV_FILE_PATH)
+        logging.info(f"CSV file {CSV_FILE_PATH} deleted.")
+        update_last_execution_timestamp()
+        logging.info("Service executed successfully.")
+    else:
+        logging.warning("Some data failed to send. CSV file not deleted.")
 
 if __name__ == "__main__":
     read_csv_and_send_data()

@@ -288,8 +288,6 @@ class Application(tk.Tk):
             if not self.is_internet_available():
                 self.log("Sem conexão com a internet. Salvando no CSV.")
                 self.backup_data_csv(raspberry_id, codigobarras, filial_id, data_time)
-                self.failed_barcodes.append(payload)
-                self.update_failed_list()
                 return
 
             try:
@@ -301,13 +299,9 @@ class Application(tk.Tk):
                 else:
                     self.log(f"Erro ao enviar dados: {response.status_code}")
                     self.backup_data_csv(raspberry_id, codigobarras, filial_id, data_time)
-                    self.failed_barcodes.append(payload)
-                    self.update_failed_list()
             except requests.exceptions.RequestException:
                 self.log("Erro ao tentar conectar com o endpoint.")
                 self.backup_data_csv(raspberry_id, codigobarras, filial_id, data_time)
-                self.failed_barcodes.append(payload)
-                self.update_failed_list()
 
         threading.Thread(target=send_data).start()
 
@@ -371,18 +365,7 @@ class Application(tk.Tk):
             self.network_info_label.config(text=f"MAC: {mac_address}\nIP Rede Local: {local_network_ip}\nInternet: {internet_status}")
 
     def retry_failed_barcodes(self):
-        for payload in self.failed_barcodes:
-            try:
-                response = requests.post(f"{LARAVEL_STORE_ENDPOINT}/api/raspberry-scan-store", json=payload)
-                if response.status_code == 200:
-                    self.log(f"Reenvio bem-sucedido: {payload['codigo_barras']}")
-                    self.failed_barcodes.remove(payload)
-                else:
-                    self.log(f"Falha no reenvio: {payload['codigo_barras']}, Código de status: {response.status_code}")
-            except requests.exceptions.RequestException as e:
-                self.log(f"Erro no reenvio: {payload['codigo_barras']}, Erro: {e}")
-
-        self.update_failed_list()
+        pass  # Remove the retry logic
 
     def update_current_timestamp(self):
         self.current_timestamp.set(f"Data Hora Atual: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
@@ -406,5 +389,4 @@ class Application(tk.Tk):
 if __name__ == "__main__":
     app = Application()
     app.check_internet_connection()  # Start checking internet connection
-    app.after(60000, app.retry_failed_barcodes)  # Retry every 60 seconds
     app.mainloop()
