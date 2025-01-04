@@ -8,6 +8,25 @@ PYTHON_PATH="/usr/bin/python3"
 SERVICE_NAME="script.service"
 TIMER_NAME="python-hourly.timer"
 
+# Create .env file if it does not exist
+ENV_FILE="$WORKING_DIR/.env"
+if [ ! -f "$ENV_FILE" ]; then
+    echo "Creating .env file..."
+    cat > "$ENV_FILE" <<EOF
+# Configurações da API
+LARAVEL_STORE_ENDPOINT=https://staf-homolog.exostack.com.br
+RASPBERRY_ID=1
+FILIAL_ID=1
+
+# Caminhos dos arquivos
+IDS_FILE_PATH='ids.txt'
+CSV_FILE_PATH='data_backup.csv'
+
+# Timestamp do último envio
+LAST_SENT_TIMESTAMP=
+EOF
+fi
+
 # Enable auto-login for user kali
 echo "Setting up auto-login for user $USER_NAME..."
 sudo mkdir -p /etc/systemd/system/getty@tty1.service.d
@@ -30,6 +49,12 @@ echo "Installing dependencies..."
 sudo apt-get update
 sudo apt-get install -y python3-pip python3-tk python3-dotenv
 pip3 install requests python-dotenv pynput --break-system-packages
+
+# Create log file for service.py and set permissions
+LOG_FILE="/var/log/staf_rasp_service.log"
+echo "Creating log file for service.py and setting permissions..."
+sudo touch $LOG_FILE
+sudo chown $USER_NAME:$USER_NAME $LOG_FILE
 
 # Create systemd service for script.py
 echo "Creating systemd service for script.py..."
@@ -79,6 +104,8 @@ ExecStart=$PYTHON_PATH $SERVICE_PATH
 WorkingDirectory=$WORKING_DIR
 User=$USER_NAME
 Group=$USER_NAME
+StandardOutput=append:$LOG_FILE
+StandardError=append:$LOG_FILE
 
 [Install]
 WantedBy=multi-user.target
