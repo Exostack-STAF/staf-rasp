@@ -129,7 +129,8 @@ class Application(tk.Tk):
         self.laravel_endpoint_label.grid(row=1, column=0, padx=10, pady=10, sticky='w')
         self.laravel_endpoint_entry = tk.Entry(self.config_frame, width=50, font=self.custom_font)
         self.laravel_endpoint_entry.grid(row=1, column=1, padx=10, pady=10, sticky='w')
-        self.laravel_endpoint_entry.insert(0, LARAVEL_STORE_ENDPOINT)
+        if LARAVEL_STORE_ENDPOINT:
+            self.laravel_endpoint_entry.insert(0, LARAVEL_STORE_ENDPOINT)
 
         self.raspberry_id_label = tk.Label(self.config_frame, text="RASPBERRY_ID:", font=self.custom_font)
         self.raspberry_id_label.grid_forget()  # Hide the label
