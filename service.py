@@ -43,7 +43,7 @@ def read_csv_and_send_data():
                 'mac_address': row['mac_address'],
                 'tipo': 'offline'
             }
-            response = requests.post(ENDPOINT_URL, json=data)
+            response = requests.post(f"{ENDPOINT_URL}/api/raspberry-scan-store-offline", json=data)
             if response.status_code == 200:
                 logging.info(f"Data sent successfully: {data}")
                 update_last_sent_timestamp(data['data_time'])
