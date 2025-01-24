@@ -46,7 +46,7 @@ def read_csv_in_chunks(file_path, chunk_size=100):
             yield chunk
 
 def read_csv_and_send_data():
-    if not os.path.exists(CCSV_FILE_PATH):
+    if not os.path.exists(CSV_FILE_PATH):
         logging.error(f"CSV file {CSV_FILE_PATH} does not exist. Exiting.")
         return
 
