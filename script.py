@@ -281,7 +281,8 @@ class Application(tk.Tk):
             'codigo_barras': codigobarras,
             'data_time': data_time,
             'filial_id': FILIAL_ID,
-            'mac_address': self.get_mac_address()
+            'mac_address': self.get_mac_address(),
+            'tipo': 'online'
         }
 
         def send_data():
