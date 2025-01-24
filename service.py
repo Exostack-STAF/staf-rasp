@@ -25,6 +25,18 @@ def update_last_execution_timestamp():
         env_file.write(f'\nLAST_EXECUTION_TIMESTAMP={timestamp}')
     logging.info(f"Updated LAST_EXECUTION_TIMESTAMP in .env: {timestamp}")
 
+def read_csv_in_chunks(file_path, chunk_size=100):
+    with open(file_path, mode='r') as file:
+        csv_reader = csv.DictReader(file)
+        chunk = []
+        for row in csv_reader:
+            chunk.append(row)
+            if len(chunk) >= chunk_size:
+                yield chunk
+                chunk = []
+        if chunk:
+            yield chunk
+
 def read_csv_and_send_data():
     if not os.path.exists(CSV_FILE_PATH):
         logging.error(f"CSV file {CSV_FILE_PATH} does not exist. Exiting.")
@@ -36,9 +48,8 @@ def read_csv_and_send_data():
 
     all_data_sent = True
 
-    with open(CSV_FILE_PATH, mode='r') as file:
-        csv_reader = csv.DictReader(file)
-        for row in csv_reader:
+    for chunk in read_csv_in_chunks(CSV_FILE_PATH):
+        for row in chunk:
             data = {
                 'data_time': row['timestamp'],
                 'raspberry_id': row['raspberry_id'],
