@@ -9,7 +9,15 @@ from datetime import datetime
 load_dotenv()
 
 # Configurar logging
-logging.basicConfig(filename='/var/log/staf_rasp_service.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+handlers = [logging.FileHandler('/var/log/staf_rasp_service.log')]
+if os.getenv('ENABLE_CONSOLE_LOGGING', 'false').lower() == 'true':
+    handlers.append(logging.StreamHandler())  # Adiciona logging no terminal se habilitado
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=handlers
+)
 
 CSV_FILE_PATH = os.getenv('CSV_FILE_PATH')  # Caminho do arquivo CSV
 ENDPOINT_URL = os.getenv('LARAVEL_STORE_ENDPOINT')  # URL do endpoint
@@ -38,7 +46,7 @@ def read_csv_in_chunks(file_path, chunk_size=100):
             yield chunk
 
 def read_csv_and_send_data():
-    if not os.path.exists(CSV_FILE_PATH):
+    if not os.path.exists(CCSV_FILE_PATH):
         logging.error(f"CSV file {CSV_FILE_PATH} does not exist. Exiting.")
         return
 
