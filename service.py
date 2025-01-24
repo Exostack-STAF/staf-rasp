@@ -26,6 +26,10 @@ def update_last_execution_timestamp():
     logging.info(f"Updated LAST_EXECUTION_TIMESTAMP in .env: {timestamp}")
 
 def read_csv_and_send_data():
+    if not os.path.exists(CSV_FILE_PATH):
+        logging.error(f"CSV file {CSV_FILE_PATH} does not exist. Exiting.")
+        return
+
     if os.stat(CSV_FILE_PATH).st_size == 0:
         logging.info(f"CSV file {CSV_FILE_PATH} is empty. Exiting.")
         return
