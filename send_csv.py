@@ -31,8 +31,17 @@ def rename_and_move_file():
     TEMP_FILE_PATH = temp_file_with_timestamp
     return True
 
+def get_mac_address():
+    try:
+        mac = uuid.getnode()
+        mac_address = ':'.join(("%012X" % mac)[i:i+2] for i in range(0, 12, 2))
+        return mac_address
+    except Exception as e:
+        logging.error(f"Erro ao obter o MAC address: {e}")
+        return None
+
 def send_file():
-    mac_address = uuid.getnode()
+    mac_address = get_mac_address()
     files = {}
     open_files = []
     try:
