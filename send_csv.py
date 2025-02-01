@@ -18,8 +18,13 @@ TEMP_DIR = 'backup_temporario'
 TEMP_FILE_PATH = os.path.join(TEMP_DIR, 'data_backup_temp.csv')
 
 def rename_and_move_file():
-    # Renomear o arquivo
+    if not os.path.exists(BACKUP_FILE_PATH):
+        logging.error(f"File not found: {BACKUP_FILE_PATH}")
+        return False
+    if not os.path.exists(TEMP_DIR):
+        os.makedirs(TEMP_DIR)
     shutil.move(BACKUP_FILE_PATH, TEMP_FILE_PATH)
+    return True
 
 def send_file():
     with open(TEMP_FILE_PATH, 'rb') as f:
@@ -33,9 +38,11 @@ def validate_and_cleanup(response):
         logging.error(f"Failed to send file: {response.status_code} - {response.text}")
 
 def main():
-    rename_and_move_file()
-    response = send_file()
-    validate_and_cleanup(response)
+    if rename_and_move_file():
+        response = send_file()
+        validate_and_cleanup(response)
+    else:
+        logging.error("File renaming and moving failed. Exiting.")
 
 if __name__ == "__main__":
     main()
