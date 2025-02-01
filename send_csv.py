@@ -5,6 +5,7 @@ import logging
 import argparse
 import shutil
 import uuid
+import time
 
 # Carregar variáveis de ambiente do arquivo .env
 load_dotenv()
@@ -23,17 +24,25 @@ def rename_and_move_file():
         return False
     if not os.path.exists(TEMP_DIR):
         os.makedirs(TEMP_DIR)
+    timestamp = time.strftime("%Y%m%d%H%M%S")
+    temp_file_with_timestamp = os.path.join(TEMP_DIR, f'data_backup_temp_{timestamp}.csv')
     if os.path.exists(TEMP_FILE_PATH):
         unify_files()
-    shutil.move(BACKUP_FILE_PATH, TEMP_FILE_PATH)
+    shutil.move(BACKUP_FILE_PATH, temp_file_with_timestamp)
+    global TEMP_FILE_PATH
+    TEMP_FILE_PATH = temp_file_with_timestamp
     return True
 
 def send_file():
     mac_address = uuid.getnode()
-    with open(TEMP_FILE_PATH, 'rb') as f:
-        files = {'data_backup': f}
-        data = {'mac_address': mac_address}
-        response = requests.post(ENDPOINT_URL, files=files, data=data)
+    files = {}
+    for filename in os.listdir(TEMP_DIR):
+        file_path = os.path.join(TEMP_DIR, filename)
+        if os.path.isfile(file_path):
+            with open(file_path, 'rb') as f:
+                files[filename] = f
+    data = {'mac_address': mac_address}
+    response = requests.post(ENDPOINT_URL, files=files, data=data)
     return response
 
 def unify_files():
