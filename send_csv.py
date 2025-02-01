@@ -23,7 +23,7 @@ def rename_and_move_file():
         return False
     if not os.path.exists(TEMP_DIR):
         os.makedirs(TEMP_DIR)
-    if os.listdir(TEMP_DIR):
+    if os.path.exists(TEMP_FILE_PATH):
         unify_files()
     shutil.move(BACKUP_FILE_PATH, TEMP_FILE_PATH)
     return True
