@@ -41,8 +41,8 @@ def send_file():
             if os.path.isfile(file_path):
                 f = open(file_path, 'rb')
                 open_files.append(f)
-                files[filename] = f
-        data = {'mac_address': mac_address}
+                files['csv'] = f
+        data = {'mac': mac_address}
         response = requests.post(ENDPOINT_URL, files=files, data=data)
     finally:
         for f in open_files:
