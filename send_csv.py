@@ -45,7 +45,8 @@ def unify_files():
                 with open(file_path, 'rb') as f:
                     shutil.copyfileobj(f, unified_file)
                 os.remove(file_path)
-    shutil.move(unified_file_path, TEMP_FILE_PATH)
+    if os.path.exists(unified_file_path):
+        shutil.move(unified_file_path, TEMP_FILE_PATH)
 
 def validate_and_cleanup(response):
     if response.status_code == 200:
