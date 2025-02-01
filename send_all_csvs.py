@@ -34,6 +34,7 @@ def main():
             response = send_file(file_path)
             if response.status_code == 200:
                 os.remove(file_path)
+                logging.info(f"File {filename} sent and deleted successfully.")
             else:
                 logging.error(f"Failed to send file {filename}: {response.status_code} - {response.text}")
 
