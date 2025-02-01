@@ -27,8 +27,11 @@ def rename_and_move_file():
     return True
 
 def send_file():
+    mac_address = uuid.getnode()
     with open(TEMP_FILE_PATH, 'rb') as f:
-        response = requests.post(ENDPOINT_URL, files={'file': f})
+        files = {'data_backup': f}
+        data = {'mac_address': mac_address}
+        response = requests.post(ENDPOINT_URL, files=files, data=data)
     return response
 
 def validate_and_cleanup(response):
