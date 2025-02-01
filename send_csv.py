@@ -27,8 +27,6 @@ def rename_and_move_file():
         os.makedirs(TEMP_DIR)
     timestamp = time.strftime("%Y%m%d%H%M%S")
     temp_file_with_timestamp = os.path.join(TEMP_DIR, f'data_backup_temp_{timestamp}.csv')
-    if os.path.exists(TEMP_FILE_PATH):
-        unify_files()
     shutil.move(BACKUP_FILE_PATH, temp_file_with_timestamp)
     TEMP_FILE_PATH = temp_file_with_timestamp
     return True
@@ -36,34 +34,26 @@ def rename_and_move_file():
 def send_file():
     mac_address = uuid.getnode()
     files = {}
-    for filename in os.listdir(TEMP_DIR):
-        file_path = os.path.join(TEMP_DIR, filename)
-        if os.path.isfile(file_path):
-            with open(file_path, 'rb') as f:
-                files[filename] = f
-    data = {'mac_address': mac_address}
-    response = requests.post(ENDPOINT_URL, files=files, data=data)
-    return response
-
-def unify_files():
-    unified_file_path = os.path.join(TEMP_DIR, 'unified_backup.csv')
-    with open(unified_file_path, 'wb') as unified_file:
+    open_files = []
+    try:
         for filename in os.listdir(TEMP_DIR):
             file_path = os.path.join(TEMP_DIR, filename)
             if os.path.isfile(file_path):
-                with open(file_path, 'rb') as f:
-                    shutil.copyfileobj(f, unified_file)
-                os.remove(file_path)
-    if os.path.exists(unified_file_path):
-        shutil.move(unified_file_path, TEMP_FILE_PATH)
+                f = open(file_path, 'rb')
+                open_files.append(f)
+                files[filename] = f
+        data = {'mac_address': mac_address}
+        response = requests.post(ENDPOINT_URL, files=files, data=data)
+    finally:
+        for f in open_files:
+            f.close()
+    return response
 
 def validate_and_cleanup(response):
     if response.status_code == 200:
         os.remove(TEMP_FILE_PATH)
     else:
         logging.error(f"Failed to send file: {response.status_code} - {response.text}")
-        if len(os.listdir(TEMP_DIR)) > 1:
-            unify_files()
 
 def main():
     if rename_and_move_file():
