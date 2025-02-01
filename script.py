@@ -335,8 +335,12 @@ class Application(tk.Tk):
 
     def backup_data_csv(self, raspberry_id, codigobarras, filial_id, data_time):
         try:
-            file_exists = os.path.isfile(CSV_FILE_PATH)
-            with open(CSV_FILE_PATH, mode='a', newline='') as file:
+            backup_folder = 'backup'
+            if not os.path.exists(backup_folder):
+                os.makedirs(backup_folder)
+            csv_file_path = os.path.join(backup_folder, os.path.basename(CSV_FILE_PATH))
+            file_exists = os.path.isfile(csv_file_path)
+            with open(csv_file_path, mode='a', newline='') as file:
                 writer = csv.writer(file)
                 if not file_exists:
                     writer.writerow(['timestamp', 'raspberry_id', 'codigobarras', 'filial_id', 'mac_address'])
