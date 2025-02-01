@@ -19,6 +19,7 @@ TEMP_DIR = '/home/kali/staf-rasp/backup_temporario'
 TEMP_FILE_PATH = os.path.join(TEMP_DIR, 'data_backup_temp.csv')
 
 def rename_and_move_file():
+    global TEMP_FILE_PATH
     if not os.path.exists(BACKUP_FILE_PATH):
         logging.error(f"File not found: {BACKUP_FILE_PATH}")
         return False
@@ -29,7 +30,6 @@ def rename_and_move_file():
     if os.path.exists(TEMP_FILE_PATH):
         unify_files()
     shutil.move(BACKUP_FILE_PATH, temp_file_with_timestamp)
-    global TEMP_FILE_PATH
     TEMP_FILE_PATH = temp_file_with_timestamp
     return True
 
