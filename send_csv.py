@@ -13,8 +13,8 @@ CSV_FILE_PATH = os.getenv('CSV_FILE_PATH')  # Caminho do arquivo CSV
 ENDPOINT_URL = os.getenv('LARAVEL_STORE_ENDPOINT') + '/api/raspberry-scan-store-offline'  # URL do endpoint
 
 # Caminho do arquivo de backup e pasta temporária
-BACKUP_FILE_PATH = '/backup/data_backup.csv'
-TEMP_DIR = 'backup_temporario'
+BACKUP_FILE_PATH = '/home/kali/staf-rasp/backup/data_backup.csv'
+TEMP_DIR = '/home/kali/staf-rasp/backup_temporario'
 TEMP_FILE_PATH = os.path.join(TEMP_DIR, 'data_backup_temp.csv')
 
 def rename_and_move_file():
