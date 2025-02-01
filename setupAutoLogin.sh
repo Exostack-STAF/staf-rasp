@@ -91,26 +91,6 @@ Persistent=true
 WantedBy=timers.target
 EOF"
 
-# Create systemd service for service.py
-SERVICE_PY_NAME="service_py.service"
-echo "Creating systemd service for service.py..."
-sudo bash -c "cat > /etc/systemd/system/$SERVICE_PY_NAME <<EOF
-[Unit]
-Description=Run service.py every hour
-After=network.target
-
-[Service]
-ExecStart=$PYTHON_PATH $SERVICE_PATH
-WorkingDirectory=$WORKING_DIR
-User=$USER_NAME
-Group=$USER_NAME
-StandardOutput=append:$LOG_FILE
-StandardError=append:$LOG_FILE
-
-[Install]
-WantedBy=multi-user.target
-EOF"
-
 # Disable hibernation
 echo "Disabling hibernation..."
 sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
@@ -165,7 +145,6 @@ sudo systemctl enable $SERVICE_NAME
 sudo systemctl start $SERVICE_NAME
 sudo systemctl enable $TIMER_NAME
 sudo systemctl start $TIMER_NAME
-sudo systemctl enable $SERVICE_PY_NAME
 
 echo "Setup completed. Rebooting the system..."
 sudo reboot
