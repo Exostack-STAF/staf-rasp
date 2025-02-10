@@ -348,7 +348,7 @@ class Application(tk.Tk):
 
     def backup_data_csv(self, raspberry_id, codigobarras, filial_id, data_time):
         try:
-            backup_folder = 'backup'
+            backup_folder = '/home/kali/staf-rasp/backup'
             if not os.path.exists(backup_folder):
                 os.makedirs(backup_folder)
             csv_file_path = os.path.join(backup_folder, os.path.basename(CSV_FILE_PATH))
@@ -421,13 +421,17 @@ class Application(tk.Tk):
     def load_backup_csv(self):
         try:
             self.unsent_barcode_log_area.delete(1.0, tk.END)
-            backup_csv_path = 'backup/data_backup.csv'
-            if os.path.exists(backup_csv_path):
-                with open(backup_csv_path, mode='r') as file:
-                    reader = csv.reader(file)
-                    self.unsent_barcode_log_area.insert(tk.END, "Códigos de Barras Não Enviados:\n")
-                    for row in reader:
-                        self.unsent_barcode_log_area.insert(tk.END, f"{row}\n")
+            backup_folder = '/home/kali/staf-rasp/backup'
+            if os.path.exists(backup_folder):
+                self.unsent_barcode_log_area.insert(tk.END, "Códigos de Barras Não Enviados:\n")
+                for filename in os.listdir(backup_folder):
+                    if filename.endswith('.csv'):
+                        backup_csv_path = os.path.join(backup_folder, filename)
+                        with open(backup_csv_path, mode='r') as file:
+                            reader = csv.reader(file)
+                            self.unsent_barcode_log_area.insert(tk.END, f"Arquivo: {filename}\n")
+                            for row in reader:
+                                self.unsent_barcode_log_area.insert(tk.END, f"{row}\n")
             else:
                 self.unsent_barcode_log_area.insert(tk.END, "Nenhum CSV de backup encontrado.\n")
         except Exception as e:
