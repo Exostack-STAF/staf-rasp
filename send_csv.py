@@ -18,6 +18,9 @@ BACKUP_FILE_PATH = '/home/kali/staf-rasp/backup/data_backup.csv'
 TEMP_DIR = '/home/kali/staf-rasp/backup_temporario'
 TEMP_FILE_PATH = os.path.join(TEMP_DIR, 'data_backup_temp.csv')
 
+# Caminho da pasta de backup permanente
+PERMANENT_BACKUP_DIR = '/home/kali/staf-rasp/backup_permanente'
+
 def rename_and_move_file():
     global TEMP_FILE_PATH
     if not os.path.exists(BACKUP_FILE_PATH):
@@ -64,8 +67,16 @@ def validate_and_cleanup(response):
     else:
         logging.error(f"Failed to send file: {response.status_code} - {response.text}")
 
+def save_permanent_backup():
+    if not os.path.exists(PERMANENT_BACKUP_DIR):
+        os.makedirs(PERMANENT_BACKUP_DIR)
+    timestamp = time.strftime("%Y%m%d%H%M%S")
+    permanent_backup_file = os.path.join(PERMANENT_BACKUP_DIR, f'data_backup_{timestamp}.csv')
+    shutil.copy(TEMP_FILE_PATH, permanent_backup_file)
+
 def main():
     if rename_and_move_file():
+        save_permanent_backup()
         response = send_file()
         validate_and_cleanup(response)
     else:
