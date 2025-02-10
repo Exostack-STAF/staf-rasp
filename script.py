@@ -12,6 +12,7 @@ from tkinter import scrolledtext, messagebox, ttk
 from tkinter import font as tkfont
 from pynput import keyboard
 import socket
+import subprocess
 
 # Carregar variáveis de ambiente do arquivo .env
 load_dotenv()
@@ -53,6 +54,7 @@ class Application(tk.Tk):
             logging.error("Logo image not found. Continuing without logo.")
         
         self.create_widgets()
+        self.load_backup_csv()  # Load CSV content on startup
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.display_mac_address()
 
@@ -117,6 +119,17 @@ class Application(tk.Tk):
         # Botão para sair do modo de tela cheia
         self.exit_fullscreen_button = tk.Button(self.main_frame, text="Sair do modo de tela cheia", command=self.exit_fullscreen, font=self.custom_font)
         self.exit_fullscreen_button.grid(row=3, column=0, columnspan=3, padx=10, pady=10, sticky='w')
+
+        # Botões para enviar CSVs
+        self.send_csv_button = tk.Button(self.main_frame, text="Enviar CSV", command=self.send_csv, font=self.custom_font)
+        self.send_csv_button.grid(row=4, column=0, padx=10, pady=10, sticky='w')
+
+        self.send_all_csvs_button = tk.Button(self.main_frame, text="Enviar Todos CSVs", command=self.send_all_csvs, font=self.custom_font)
+        self.send_all_csvs_button.grid(row=4, column=1, padx=10, pady=10, sticky='w')
+
+        # Botão para carregar CSV de backup
+        self.load_backup_csv_button = tk.Button(self.main_frame, text="Carregar CSV de Backup", command=self.load_backup_csv, font=self.custom_font)
+        self.load_backup_csv_button.grid(row=4, column=2, padx=10, pady=10, sticky='w')
 
         # Aba de configuração
         self.config_frame = ttk.Frame(self.notebook)
@@ -390,6 +403,35 @@ class Application(tk.Tk):
         last_execution = os.getenv('LAST_EXECUTION_TIMESTAMP', 'Nunca')
         self.last_service_execution_timestamp.set(f"Última execução do serviço: {last_execution}")
         self.after(60000, self.update_last_service_execution_timestamp)
+
+    def send_csv(self):
+        try:
+            subprocess.run(["python", "send_csv.py"], check=True)
+            self.log("CSV enviado com sucesso.")
+        except subprocess.CalledProcessError as e:
+            self.log(f"Erro ao enviar CSV: {e}")
+
+    def send_all_csvs(self):
+        try:
+            subprocess.run(["python", "send_all_csvs.py"], check=True)
+            self.log("Todos os CSVs enviados com sucesso.")
+        except subprocess.CalledProcessError as e:
+            self.log(f"Erro ao enviar todos os CSVs: {e}")
+
+    def load_backup_csv(self):
+        try:
+            self.unsent_barcode_log_area.delete(1.0, tk.END)
+            backup_csv_path = 'backup/data_backup.csv'
+            if os.path.exists(backup_csv_path):
+                with open(backup_csv_path, mode='r') as file:
+                    reader = csv.reader(file)
+                    self.unsent_barcode_log_area.insert(tk.END, "Códigos de Barras Não Enviados:\n")
+                    for row in reader:
+                        self.unsent_barcode_log_area.insert(tk.END, f"{row}\n")
+            else:
+                self.unsent_barcode_log_area.insert(tk.END, "Nenhum CSV de backup encontrado.\n")
+        except Exception as e:
+            self.log(f"Erro ao carregar CSV de backup: {e}")
 
 if __name__ == "__main__":
     app = Application()
