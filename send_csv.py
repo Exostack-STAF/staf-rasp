@@ -6,6 +6,8 @@ import argparse
 import shutil
 import uuid
 import time
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 # Carregar variáveis de ambiente do arquivo .env
 load_dotenv()
@@ -55,7 +57,23 @@ def send_file():
                 open_files.append(f)
                 files['data_backup'] = f
         data = {'mac_address': mac_address}
-        response = requests.post(ENDPOINT_URL, files=files, data=data)
+        
+        session = requests.Session()
+        retry = Retry(
+            total=5,
+            backoff_factor=1,
+            status_forcelist=[429, 500, 502, 503, 504],
+            method_whitelist=["HEAD", "GET", "OPTIONS", "POST"]
+        )
+        adapter = HTTPAdapter(max_retries=retry)
+        session.mount("https://", adapter)
+        session.mount("http://", adapter)
+        
+        response = session.post(ENDPOINT_URL, files=files, data=data)
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Failed to send file: {e}")
+        response = None
     finally:
         for f in open_files:
             f.close()
