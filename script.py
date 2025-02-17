@@ -114,7 +114,7 @@ class Application(tk.Tk):
 
         # Frame para informações de rede
         self.network_info_frame = ttk.Frame(self.main_frame)
-        self.network_info_frame.grid(row=3, column=1, columnspan=3, padx=10, pady=10, sticky='nsew')
+        self.network_info_frame.grid(row=3, column=0, columnspan=3, padx=10, pady=10, sticky='nsew')
 
         self.network_info_label = tk.Label(self.network_info_frame, text="", font=self.custom_font, fg="gray")
         self.network_info_label.pack(anchor='ne', padx=10, pady=10)
@@ -139,18 +139,18 @@ class Application(tk.Tk):
 
         # Botão para sair do modo de tela cheia
         self.exit_fullscreen_button = tk.Button(self.main_frame, text="Sair do modo de tela cheia", command=self.exit_fullscreen, font=self.custom_font)
-        self.exit_fullscreen_button.grid(row=4, column=3, columnspan=3, padx=10, pady=10, sticky='w')
+        self.exit_fullscreen_button.grid(row=4, column=0, columnspan=3, padx=10, pady=10, sticky='w')
 
         # Botões para enviar CSVs
         self.send_csv_button = tk.Button(self.main_frame, text="Enviar CSV", command=self.send_csv, font=self.custom_font)
-        self.send_csv_button.grid(row=3, column=0, padx=10, pady=10, sticky='w')
+        self.send_csv_button.grid(row=5, column=0, padx=10, pady=10, sticky='w')
 
         self.send_all_csvs_button = tk.Button(self.main_frame, text="Enviar Todos CSVs", command=self.send_all_csvs, font=self.custom_font)
-        self.send_all_csvs_button.grid(row=4, column=1, padx=10, pady=10, sticky='w')
+        self.send_all_csvs_button.grid(row=5, column=1, padx=10, pady=10, sticky='w')
 
         # Botão para carregar CSV de backup
         self.load_backup_csv_button = tk.Button(self.main_frame, text="Carregar CSV de Backup", command=self.load_backup_csv, font=self.custom_font)
-        self.load_backup_csv_button.grid(row=4, column=2, padx=10, pady=10, sticky='w')
+        self.load_backup_csv_button.grid(row=5, column=2, padx=10, pady=10, sticky='w')
 
         # Aba de configuração
         self.config_frame = ttk.Frame(self.notebook)
