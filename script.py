@@ -177,6 +177,15 @@ class Application(tk.Tk):
         self.unsent_barcode_log_area = scrolledtext.ScrolledText(self.data_backup_frame, wrap=tk.WORD, width=100, height=20, font=self.custom_font)
         self.unsent_barcode_log_area.grid(row=2, column=0, columnspan=3, padx=10, pady=10, sticky='nsew')
 
+        # Aba de log de erros
+        self.error_log_frame = ttk.Frame(self.notebook)
+        self.notebook.add(self.error_log_frame, text='Log de Erros')
+
+        self.error_log_area_label = tk.Label(self.error_log_frame, text="Log de Erros", font=self.custom_font, fg="red")
+        self.error_log_area_label.pack(anchor='nw', padx=5, pady=5)
+        self.error_log_area = scrolledtext.ScrolledText(self.error_log_frame, wrap=tk.WORD, width=100, height=20, font=self.custom_font, fg="red")
+        self.error_log_area.pack(fill='both', expand=True, padx=10, pady=10)
+
         # Expand all rows and columns to fill the screen
         for i in range(6):
             self.main_frame.grid_rowconfigure(i, weight=1)
@@ -233,7 +242,7 @@ class Application(tk.Tk):
                 self.barcode_entry.insert(tk.END, key.char)
                 self.barcode_entry.config(state='disabled')
         except AttributeError as e:
-            self.log(f"Erro: {e}")
+            self.log_error(f"Erro: {e}")
 
     def display_mac_address(self):
         """Exibe o MAC Address e IP da rede local no canto superior direito da janela."""
@@ -251,7 +260,7 @@ class Application(tk.Tk):
             s.close()
             return local_network_ip
         except Exception as e:
-            self.log(f"Erro ao obter o IP da rede local: {e}")
+            self.log_error(f"Erro ao obter o IP da rede local: {e}")
             return None
 
     def exit_fullscreen(self, event=None):
@@ -273,6 +282,10 @@ class Application(tk.Tk):
         self.log_area.insert(tk.END, f"{message}\n")
         self.log_area.see(tk.END)
 
+    def log_error(self, message):
+        self.error_log_area.insert(tk.END, f"{message}\n")
+        self.error_log_area.see(tk.END)
+
     def save_env(self):
         env_content = self.env_text.get("1.0", tk.END).strip()
         try:
@@ -280,7 +293,7 @@ class Application(tk.Tk):
                 env_file.write(env_content)
             messagebox.showinfo("Sucesso", "Arquivo .env salvo com sucesso!")
         except Exception as e:
-            messagebox.showerror("Erro", f"Não foi possível salvar o arquivo .env:\n{str(e)}")
+            self.log_error(f"Erro ao salvar o arquivo .env: {e}")
 
     def process_barcode(self, event=None):
         barcode = self.barcode_entry.get().strip()
@@ -303,7 +316,7 @@ class Application(tk.Tk):
             mac_address = ':'.join(("%012X" % mac)[i:i+2] for i in range(0, 12, 2))
             return mac_address
         except Exception as e:
-            self.log(f"Erro ao obter o MAC address: {e}")
+            self.log_error(f"Erro ao obter o MAC address: {e}")
             return None
     
     def insert_data(self, raspberry_id, codigobarras, filial_id):
@@ -390,7 +403,7 @@ class Application(tk.Tk):
                     writer.writerow(['timestamp', 'raspberry_id', 'codigobarras', 'filial_id', 'mac_address'])
                 writer.writerow([data_time, raspberry_id, codigobarras, filial_id, self.get_mac_address()])
         except Exception as e:
-            self.log(f"Erro ao salvar dados no CSV: {e}")
+            self.log_error(f"Erro ao salvar dados no CSV: {e}")
 
     def check_internet_connection(self):
         def update_status():
@@ -434,14 +447,14 @@ class Application(tk.Tk):
             subprocess.run(["python", "send_csv.py"], check=True)
             self.log("CSV enviado com sucesso.")
         except subprocess.CalledProcessError as e:
-            self.log(f"Erro ao enviar CSV: {e}")
+            self.log_error(f"Erro ao enviar CSV: {e}")
 
     def send_all_csvs(self):
         try:
             subprocess.run(["python", "send_all_csvs.py"], check=True)
             self.log("Todos os CSVs enviados com sucesso.")
         except subprocess.CalledProcessError as e:
-            self.log(f"Erro ao enviar todos os CSVs: {e}")
+            self.log_error(f"Erro ao enviar todos os CSVs: {e}")
 
     def load_backup_csv(self):
         try:
@@ -460,7 +473,7 @@ class Application(tk.Tk):
             else:
                 self.unsent_barcode_log_area.insert(tk.END, "Nenhum CSV de backup encontrado.\n")
         except Exception as e:
-            self.log(f"Erro ao carregar CSV de backup: {e}")
+            self.log_error(f"Erro ao carregar CSV de backup: {e}")
 
 if __name__ == "__main__":
     app = Application()
