@@ -88,17 +88,27 @@ class Application(tk.Tk):
         self.log_frame = ttk.Frame(self.main_frame)
         self.log_frame.grid(row=1, column=0, columnspan=3, padx=10, pady=10, sticky='nsew')
 
+        self.log_area_label = tk.Label(self.log_frame, text="Log de Batimentos", font=self.custom_font)
+        self.log_area_label.pack(anchor='nw', padx=5, pady=5)
         self.log_area = scrolledtext.ScrolledText(self.log_frame, wrap=tk.WORD, width=50, height=10, font=self.custom_font)
         self.log_area.pack(side='left', padx=5, pady=5, fill='both', expand=True)
-        self.unsent_barcode_log_area = scrolledtext.ScrolledText(self.log_frame, wrap=tk.WORD, width=50, height=10, font=self.custom_font)
-        self.unsent_barcode_log_area.pack(side='right', padx=5, pady=5, fill='both', expand=True)
+
+        self.barcode_log_area_response_label = tk.Label(self.log_frame, text="Resposta do Endpoint", font=self.custom_font)
+        self.barcode_log_area_response_label.pack(anchor='ne', padx=5, pady=5)
+        self.barcode_log_area_response = scrolledtext.ScrolledText(self.log_frame, wrap=tk.WORD, width=50, height=10, font=self.custom_font)
+        self.barcode_log_area_response.pack(side='right', padx=5, pady=5, fill='both', expand=True)
 
         # Frame para logs de sucesso e falha
         self.success_log_frame = ttk.Frame(self.main_frame)
         self.success_log_frame.grid(row=2, column=0, columnspan=3, padx=10, pady=10, sticky='nsew')
 
+        self.success_log_area_label = tk.Label(self.success_log_frame, text="Log de Sucesso", font=self.custom_font, fg="green")
+        self.success_log_area_label.pack(anchor='nw', padx=5, pady=5)
         self.success_log_area = scrolledtext.ScrolledText(self.success_log_frame, wrap=tk.WORD, width=50, height=10, font=self.custom_font, fg="green")
         self.success_log_area.pack(side='left', padx=5, pady=5, fill='both', expand=True)
+
+        self.failed_log_area_label = tk.Label(self.success_log_frame, text="Log de Falha", font=self.custom_font, fg="red")
+        self.failed_log_area_label.pack(anchor='ne', padx=5, pady=5)
         self.failed_log_area = scrolledtext.ScrolledText(self.success_log_frame, wrap=tk.WORD, width=50, height=10, font=self.custom_font, fg="red")
         self.failed_log_area.pack(side='right', padx=5, pady=5, fill='both', expand=True)
 
@@ -328,16 +338,19 @@ class Application(tk.Tk):
                     self.log(success_message)
                     self.update_last_sent_timestamp(data_time)
                     self.success_log_area.insert(tk.END, f"Enviado com sucesso: {codigobarras} - {data_time}\n")
+                    self.barcode_log_area_response.insert(tk.END, f"Resposta do Endpoint: {response.json()}\n")
                     self.barcode_status.set(f"Status: Código de barras {codigobarras} enviado com sucesso.")
                 else:
                     self.log(f"Erro ao enviar dados: {response.status_code}")
                     self.failed_log_area.insert(tk.END, f"Erro ao enviar: {response.text}\n")
+                    self.barcode_log_area_response.insert(tk.END, f"Erro do Endpoint: {response.text}\n")
                     self.backup_data_csv(raspberry_id, codigobarras, filial_id, data_time)
                     self.failed_log_area.insert(tk.END, f"Falha ao enviar: {codigobarras} - {data_time}\n")
                     self.barcode_status.set(f"Status: Falha ao enviar código de barras {codigobarras}.")
             except requests.exceptions.RequestException as e:
                 self.log(f"Erro ao tentar conectar com o endpoint: {e}")
                 self.failed_log_area.insert(tk.END, f"Erro ao tentar conectar: {e}\n")
+                self.barcode_log_area_response.insert(tk.END, f"Erro ao tentar conectar: {e}\n")
                 self.backup_data_csv(raspberry_id, codigobarras, filial_id, data_time)
                 self.failed_log_area.insert(tk.END, f"Falha ao enviar: {codigobarras} - {data_time}\n")
                 self.barcode_status.set(f"Status: Falha ao enviar código de barras {codigobarras}.")
