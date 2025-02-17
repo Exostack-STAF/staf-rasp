@@ -21,6 +21,17 @@ load_dotenv()
 LARAVEL_STORE_ENDPOINT = os.getenv('LARAVEL_STORE_ENDPOINT')
 RASPBERRY_ID = os.getenv('RASPBERRY_ID')
 FILIAL_ID = os.getenv('FILIAL_ID')
+RESPONSE_MESSAGES = {
+    200: "Dados enviados com sucesso.",
+    400: "Requisição inválida. Verifique os dados enviados.",
+    401: "Não autorizado. Verifique suas credenciais.",
+    403: "Proibido. Você não tem permissão para acessar este recurso.",
+    404: "Recurso não encontrado. Verifique a URL.",
+    500: "Erro interno do servidor. Tente novamente mais tarde.",
+    502: "Bad Gateway. O servidor está temporariamente indisponível.",
+    503: "Serviço indisponível. O servidor está sobrecarregado ou em manutenção.",
+    504: "Gateway Timeout. O servidor demorou muito para responder."
+}
 
 CSV_FILE_PATH = os.getenv('CSV_FILE_PATH')
 
@@ -354,7 +365,8 @@ class Application(tk.Tk):
                     self.barcode_log_area_response.see(tk.END)
                     self.barcode_status.set(f"Status: Código de barras {codigobarras} enviado com sucesso.")
                 else:
-                    self.error_log_area.insert(tk.END, f"Erro do Endpoint: {response.text}\n")
+                    error_message = RESPONSE_MESSAGES.get(response.status_code, "Erro desconhecido.")
+                    self.error_log_area.insert(tk.END, f"Erro do Endpoint ({response.status_code}): {error_message}\n")
                     self.error_log_area.see(tk.END)
                     self.backup_data_csv(raspberry_id, codigobarras, filial_id, data_time)
                     self.failed_log_area.insert(tk.END, f"Falha ao enviar: {codigobarras} - {data_time}\n")
