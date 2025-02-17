@@ -95,9 +95,18 @@ class Application(tk.Tk):
         self.unsent_barcode_log_area = scrolledtext.ScrolledText(self.log_frame, wrap=tk.WORD, width=50, height=20, font=self.custom_font)
         self.unsent_barcode_log_area.pack(side='right', padx=5, pady=5, fill='both', expand=True)
 
+        # Frame para logs de sucesso e falha
+        self.success_log_frame = ttk.Frame(self.main_frame)
+        self.success_log_frame.grid(row=2, column=0, columnspan=3, padx=10, pady=10, sticky='nsew')
+
+        self.success_log_area = scrolledtext.ScrolledText(self.success_log_frame, wrap=tk.WORD, width=50, height=10, font=self.custom_font, fg="green")
+        self.success_log_area.pack(side='left', padx=5, pady=5, fill='both', expand=True)
+        self.failed_log_area = scrolledtext.ScrolledText(self.success_log_frame, wrap=tk.WORD, width=50, height=10, font=self.custom_font, fg="red")
+        self.failed_log_area.pack(side='right', padx=5, pady=5, fill='both', expand=True)
+
         # Frame para informações de rede
         self.network_info_frame = ttk.Frame(self.main_frame)
-        self.network_info_frame.grid(row=2, column=0, columnspan=3, padx=10, pady=10, sticky='nsew')
+        self.network_info_frame.grid(row=3, column=0, columnspan=3, padx=10, pady=10, sticky='nsew')
 
         self.network_info_label = tk.Label(self.network_info_frame, text="", font=self.custom_font, fg="gray")
         self.network_info_label.pack(anchor='ne', padx=10, pady=10)
@@ -128,18 +137,18 @@ class Application(tk.Tk):
 
         # Botão para sair do modo de tela cheia
         self.exit_fullscreen_button = tk.Button(self.main_frame, text="Sair do modo de tela cheia", command=self.exit_fullscreen, font=self.custom_font)
-        self.exit_fullscreen_button.grid(row=3, column=0, columnspan=3, padx=10, pady=10, sticky='w')
+        self.exit_fullscreen_button.grid(row=4, column=0, columnspan=3, padx=10, pady=10, sticky='w')
 
         # Botões para enviar CSVs
         self.send_csv_button = tk.Button(self.main_frame, text="Enviar CSV", command=self.send_csv, font=self.custom_font)
-        self.send_csv_button.grid(row=4, column=0, padx=10, pady=10, sticky='w')
+        self.send_csv_button.grid(row=5, column=0, padx=10, pady=10, sticky='w')
 
         self.send_all_csvs_button = tk.Button(self.main_frame, text="Enviar Todos CSVs", command=self.send_all_csvs, font=self.custom_font)
-        self.send_all_csvs_button.grid(row=4, column=1, padx=10, pady=10, sticky='w')
+        self.send_all_csvs_button.grid(row=5, column=1, padx=10, pady=10, sticky='w')
 
         # Botão para carregar CSV de backup
         self.load_backup_csv_button = tk.Button(self.main_frame, text="Carregar CSV de Backup", command=self.load_backup_csv, font=self.custom_font)
-        self.load_backup_csv_button.grid(row=4, column=2, padx=10, pady=10, sticky='w')
+        self.load_backup_csv_button.grid(row=5, column=2, padx=10, pady=10, sticky='w')
 
         # Aba de configuração
         self.config_frame = ttk.Frame(self.notebook)
@@ -169,7 +178,7 @@ class Application(tk.Tk):
         self.save_config_button.grid(row=4, column=0, columnspan=2, padx=10, pady=10, sticky='w')
 
         # Expand all rows and columns to fill the screen
-        for i in range(4):
+        for i in range(6):
             self.main_frame.grid_rowconfigure(i, weight=1)
         for i in range(3):
             self.main_frame.grid_columnconfigure(i, weight=1)
@@ -313,6 +322,7 @@ class Application(tk.Tk):
             if not self.is_internet_available():
                 self.log("Sem conexão com a internet. Salvando no CSV.")
                 self.backup_data_csv(raspberry_id, codigobarras, filial_id, data_time)
+                self.failed_log_area.insert(tk.END, f"Falha ao enviar: {codigobarras} - {data_time}\n")
                 self.barcode_status.set("Status: Aguardando...")
                 return
 
@@ -322,14 +332,17 @@ class Application(tk.Tk):
                     success_message = response.json().get('message', 'Dados enviados com sucesso')
                     self.log(success_message)
                     self.update_last_sent_timestamp(data_time)
+                    self.success_log_area.insert(tk.END, f"Enviado com sucesso: {codigobarras} - {data_time}\n")
                     self.barcode_status.set(f"Status: Código de barras {codigobarras} enviado com sucesso.")
                 else:
                     self.log(f"Erro ao enviar dados: {response.status_code}")
                     self.backup_data_csv(raspberry_id, codigobarras, filial_id, data_time)
+                    self.failed_log_area.insert(tk.END, f"Falha ao enviar: {codigobarras} - {data_time}\n")
                     self.barcode_status.set(f"Status: Falha ao enviar código de barras {codigobarras}.")
             except requests.exceptions.RequestException:
                 self.log("Erro ao tentar conectar com o endpoint.")
                 self.backup_data_csv(raspberry_id, codigobarras, filial_id, data_time)
+                self.failed_log_area.insert(tk.END, f"Falha ao enviar: {codigobarras} - {data_time}\n")
                 self.barcode_status.set(f"Status: Falha ao enviar código de barras {codigobarras}.")
 
             self.barcode_status.set("Status: Aguardando...")
