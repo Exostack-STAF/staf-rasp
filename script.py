@@ -141,17 +141,6 @@ class Application(tk.Tk):
         self.exit_fullscreen_button = tk.Button(self.main_frame, text="Sair do modo de tela cheia", command=self.exit_fullscreen, font=self.custom_font)
         self.exit_fullscreen_button.grid(row=4, column=0, columnspan=3, padx=10, pady=10, sticky='w')
 
-        # Botões para enviar CSVs
-        self.send_csv_button = tk.Button(self.main_frame, text="Enviar CSV", command=self.send_csv, font=self.custom_font)
-        self.send_csv_button.grid(row=5, column=0, padx=10, pady=10, sticky='w')
-
-        self.send_all_csvs_button = tk.Button(self.main_frame, text="Enviar Todos CSVs", command=self.send_all_csvs, font=self.custom_font)
-        self.send_all_csvs_button.grid(row=5, column=1, padx=10, pady=10, sticky='w')
-
-        # Botão para carregar CSV de backup
-        self.load_backup_csv_button = tk.Button(self.main_frame, text="Carregar CSV de Backup", command=self.load_backup_csv, font=self.custom_font)
-        self.load_backup_csv_button.grid(row=5, column=2, padx=10, pady=10, sticky='w')
-
         # Aba de configuração
         self.config_frame = ttk.Frame(self.notebook)
         self.notebook.add(self.config_frame, text='Configuração')
@@ -166,18 +155,27 @@ class Application(tk.Tk):
         if LARAVEL_STORE_ENDPOINT:
             self.laravel_endpoint_entry.insert(0, LARAVEL_STORE_ENDPOINT)
 
-        self.raspberry_id_label = tk.Label(self.config_frame, text="RASPBERRY_ID:", font=self.custom_font)
-        self.raspberry_id_label.grid_forget()  # Hide the label
-        self.raspberry_id_entry = tk.Entry(self.config_frame, width=50, font=self.custom_font)
-        self.raspberry_id_entry.grid_forget()  # Hide the entry
-
-        self.filial_id_label = tk.Label(self.config_frame, text="FILIAL_ID:", font=self.custom_font)
-        self.filial_id_label.grid_forget()  # Hide the label
-        self.filial_id_entry = tk.Entry(self.config_frame, width=50, font=self.custom_font)
-        self.filial_id_entry.grid_forget()  # Hide the entry
-
         self.save_config_button = tk.Button(self.config_frame, text="Salvar Configurações", command=self.save_config, font=self.custom_font)
         self.save_config_button.grid(row=4, column=0, columnspan=2, padx=10, pady=10, sticky='w')
+
+        # Aba de backup de dados
+        self.data_backup_frame = ttk.Frame(self.notebook)
+        self.notebook.add(self.data_backup_frame, text='Data Backup')
+
+        self.send_csv_button = tk.Button(self.data_backup_frame, text="Enviar CSV", command=self.send_csv, font=self.custom_font)
+        self.send_csv_button.grid(row=0, column=0, padx=10, pady=10, sticky='w')
+
+        self.send_all_csvs_button = tk.Button(self.data_backup_frame, text="Enviar Todos CSVs", command=self.send_all_csvs, font=self.custom_font)
+        self.send_all_csvs_button.grid(row=0, column=1, padx=10, pady=10, sticky='w')
+
+        self.load_backup_csv_button = tk.Button(self.data_backup_frame, text="Carregar CSV de Backup", command=self.load_backup_csv, font=self.custom_font)
+        self.load_backup_csv_button.grid(row=0, column=2, padx=10, pady=10, sticky='w')
+
+        self.unsent_barcode_log_area_label = tk.Label(self.data_backup_frame, text="Códigos de Barras Não Enviados", font=self.custom_font)
+        self.unsent_barcode_log_area_label.grid(row=1, column=0, columnspan=3, padx=10, pady=10, sticky='w')
+
+        self.unsent_barcode_log_area = scrolledtext.ScrolledText(self.data_backup_frame, wrap=tk.WORD, width=100, height=20, font=self.custom_font)
+        self.unsent_barcode_log_area.grid(row=2, column=0, columnspan=3, padx=10, pady=10, sticky='nsew')
 
         # Expand all rows and columns to fill the screen
         for i in range(6):
