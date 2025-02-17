@@ -88,9 +88,9 @@ class Application(tk.Tk):
         self.log_frame = ttk.Frame(self.main_frame)
         self.log_frame.grid(row=1, column=0, columnspan=3, padx=10, pady=10, sticky='nsew')
 
-        self.log_area = scrolledtext.ScrolledText(self.log_frame, wrap=tk.WORD, width=50, height=20, font=self.custom_font)
+        self.log_area = scrolledtext.ScrolledText(self.log_frame, wrap=tk.WORD, width=50, height=10, font=self.custom_font)
         self.log_area.pack(side='left', padx=5, pady=5, fill='both', expand=True)
-        self.unsent_barcode_log_area = scrolledtext.ScrolledText(self.log_frame, wrap=tk.WORD, width=50, height=20, font=self.custom_font)
+        self.unsent_barcode_log_area = scrolledtext.ScrolledText(self.log_frame, wrap=tk.WORD, width=50, height=10, font=self.custom_font)
         self.unsent_barcode_log_area.pack(side='right', padx=5, pady=5, fill='both', expand=True)
 
         # Frame para logs de sucesso e falha
