@@ -129,9 +129,6 @@ class Application(tk.Tk):
         self.last_sent_label = tk.Label(self.network_info_frame, textvariable=self.last_sent_timestamp, font=self.custom_font, fg="gray")
         self.last_sent_label.pack(anchor='ne', padx=10, pady=10)
 
-        self.last_service_send_label = tk.Label(self.network_info_frame, textvariable=self.last_service_send_timestamp, font=self.custom_font, fg="blue")
-        self.last_service_send_label.pack(anchor='ne', padx=10, pady=10)
-
         # Label para exibir o LARAVEL_STORE_ENDPOINT
         self.laravel_store_endpoint_label = tk.Label(self.network_info_frame, textvariable=self.laravel_store_endpoint, font=self.custom_font, fg="green")
         self.laravel_store_endpoint_label.pack(anchor='ne', padx=10, pady=10)
@@ -142,18 +139,18 @@ class Application(tk.Tk):
 
         # Botão para sair do modo de tela cheia
         self.exit_fullscreen_button = tk.Button(self.main_frame, text="Sair do modo de tela cheia", command=self.exit_fullscreen, font=self.custom_font)
-        self.exit_fullscreen_button.grid(row=4, column=0, columnspan=3, padx=10, pady=10, sticky='w')
+        self.exit_fullscreen_button.grid(row=4, column=3, columnspan=3, padx=10, pady=10, sticky='w')
 
         # Botões para enviar CSVs
         self.send_csv_button = tk.Button(self.main_frame, text="Enviar CSV", command=self.send_csv, font=self.custom_font)
-        self.send_csv_button.grid(row=5, column=0, padx=10, pady=10, sticky='w')
+        self.send_csv_button.grid(row=4, column=0, padx=10, pady=10, sticky='w')
 
         self.send_all_csvs_button = tk.Button(self.main_frame, text="Enviar Todos CSVs", command=self.send_all_csvs, font=self.custom_font)
-        self.send_all_csvs_button.grid(row=5, column=1, padx=10, pady=10, sticky='w')
+        self.send_all_csvs_button.grid(row=4, column=1, padx=10, pady=10, sticky='w')
 
         # Botão para carregar CSV de backup
         self.load_backup_csv_button = tk.Button(self.main_frame, text="Carregar CSV de Backup", command=self.load_backup_csv, font=self.custom_font)
-        self.load_backup_csv_button.grid(row=5, column=2, padx=10, pady=10, sticky='w')
+        self.load_backup_csv_button.grid(row=4, column=2, padx=10, pady=10, sticky='w')
 
         # Aba de configuração
         self.config_frame = ttk.Frame(self.notebook)
@@ -334,21 +331,17 @@ class Application(tk.Tk):
             try:
                 response = requests.post(f"{LARAVEL_STORE_ENDPOINT}/api/raspberry-scan-store", json=payload)
                 if response.status_code == 200:
-                    success_message = response.json().get('message', 'Dados enviados com sucesso')
-                    self.log(success_message)
                     self.update_last_sent_timestamp(data_time)
                     self.success_log_area.insert(tk.END, f"Enviado com sucesso: {codigobarras} - {data_time}\n")
                     self.barcode_log_area_response.insert(tk.END, f"Resposta do Endpoint: {response.json()}\n")
                     self.barcode_status.set(f"Status: Código de barras {codigobarras} enviado com sucesso.")
                 else:
-                    self.log(f"Erro ao enviar dados: {response.status_code}")
                     self.failed_log_area.insert(tk.END, f"Erro ao enviar: {response.text}\n")
                     self.barcode_log_area_response.insert(tk.END, f"Erro do Endpoint: {response.text}\n")
                     self.backup_data_csv(raspberry_id, codigobarras, filial_id, data_time)
                     self.failed_log_area.insert(tk.END, f"Falha ao enviar: {codigobarras} - {data_time}\n")
                     self.barcode_status.set(f"Status: Falha ao enviar código de barras {codigobarras}.")
             except requests.exceptions.RequestException as e:
-                self.log(f"Erro ao tentar conectar com o endpoint: {e}")
                 self.failed_log_area.insert(tk.END, f"Erro ao tentar conectar: {e}\n")
                 self.barcode_log_area_response.insert(tk.END, f"Erro ao tentar conectar: {e}\n")
                 self.backup_data_csv(raspberry_id, codigobarras, filial_id, data_time)
