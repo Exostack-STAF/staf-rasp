@@ -174,7 +174,7 @@ class Application(tk.Tk):
         self.unsent_barcode_log_area_label = tk.Label(self.data_backup_frame, text="Códigos de Barras Não Enviados", font=self.custom_font)
         self.unsent_barcode_log_area_label.grid(row=1, column=0, columnspan=3, padx=10, pady=10, sticky='w')
 
-        self.unsent_barcode_log_area = scrolledtext.ScrolledText(self.data_backup_frame, wrap=tk.WORD, width=100, height=20, font=self.custom_font)
+        self.unsent_barcode_log_area = scrolledtext.ScrolledText(self.data_backup_frame, wrap=tk.WORD, font=self.custom_font)
         self.unsent_barcode_log_area.grid(row=2, column=0, columnspan=3, padx=10, pady=10, sticky='nsew')
 
         # Aba de log de erros
@@ -191,6 +191,10 @@ class Application(tk.Tk):
             self.main_frame.grid_rowconfigure(i, weight=1)
         for i in range(3):
             self.main_frame.grid_columnconfigure(i, weight=1)
+        self.data_backup_frame.grid_rowconfigure(2, weight=1)
+        self.data_backup_frame.grid_columnconfigure(0, weight=1)
+        self.data_backup_frame.grid_columnconfigure(1, weight=1)
+        self.data_backup_frame.grid_columnconfigure(2, weight=1)
 
     def save_endpoint(self):
         new_endpoint = self.laravel_endpoint_entry.get().strip()
@@ -336,6 +340,7 @@ class Application(tk.Tk):
                 self.log("Sem conexão com a internet. Salvando no CSV.")
                 self.backup_data_csv(raspberry_id, codigobarras, filial_id, data_time)
                 self.failed_log_area.insert(tk.END, f"Falha ao enviar: {codigobarras} - {data_time}\n")
+                self.failed_log_area.see(tk.END)
                 self.barcode_status.set("Status: Aguardando...")
                 return
 
@@ -344,19 +349,27 @@ class Application(tk.Tk):
                 if response.status_code == 200:
                     self.update_last_sent_timestamp(data_time)
                     self.success_log_area.insert(tk.END, f"Enviado com sucesso: {codigobarras} - {data_time}\n")
+                    self.success_log_area.see(tk.END)
                     self.barcode_log_area_response.insert(tk.END, f"Resposta do Endpoint: {response.json()}\n")
+                    self.barcode_log_area_response.see(tk.END)
                     self.barcode_status.set(f"Status: Código de barras {codigobarras} enviado com sucesso.")
                 else:
                     self.failed_log_area.insert(tk.END, f"Erro ao enviar: {response.text}\n")
+                    self.failed_log_area.see(tk.END)
                     self.barcode_log_area_response.insert(tk.END, f"Erro do Endpoint: {response.text}\n")
+                    self.barcode_log_area_response.see(tk.END)
                     self.backup_data_csv(raspberry_id, codigobarras, filial_id, data_time)
                     self.failed_log_area.insert(tk.END, f"Falha ao enviar: {codigobarras} - {data_time}\n")
+                    self.failed_log_area.see(tk.END)
                     self.barcode_status.set(f"Status: Falha ao enviar código de barras {codigobarras}.")
             except requests.exceptions.RequestException as e:
                 self.failed_log_area.insert(tk.END, f"Erro ao tentar conectar: {e}\n")
+                self.failed_log_area.see(tk.END)
                 self.barcode_log_area_response.insert(tk.END, f"Erro ao tentar conectar: {e}\n")
+                self.barcode_log_area_response.see(tk.END)
                 self.backup_data_csv(raspberry_id, codigobarras, filial_id, data_time)
                 self.failed_log_area.insert(tk.END, f"Falha ao enviar: {codigobarras} - {data_time}\n")
+                self.failed_log_area.see(tk.END)
                 self.barcode_status.set(f"Status: Falha ao enviar código de barras {codigobarras}.")
 
             self.barcode_status.set("Status: Aguardando...")
