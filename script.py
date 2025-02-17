@@ -54,6 +54,7 @@ class Application(tk.Tk):
             logging.error("Logo image not found. Continuing without logo.")
         
         self.laravel_store_endpoint = tk.StringVar(value=f"Servidor: {LARAVEL_STORE_ENDPOINT}")
+        self.barcode_status = tk.StringVar(value="Status: Aguardando...")
         self.create_widgets()
         self.load_backup_csv()  # Load CSV content on startup
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -120,6 +121,10 @@ class Application(tk.Tk):
         # Label para exibir o LARAVEL_STORE_ENDPOINT
         self.laravel_store_endpoint_label = tk.Label(self.network_info_frame, textvariable=self.laravel_store_endpoint, font=self.custom_font, fg="green")
         self.laravel_store_endpoint_label.pack(anchor='ne', padx=10, pady=10)
+
+        # Label para exibir o status do envio do código de barras
+        self.barcode_status_label = tk.Label(self.network_info_frame, textvariable=self.barcode_status, font=self.custom_font, fg="orange")
+        self.barcode_status_label.pack(anchor='ne', padx=10, pady=10)
 
         # Botão para sair do modo de tela cheia
         self.exit_fullscreen_button = tk.Button(self.main_frame, text="Sair do modo de tela cheia", command=self.exit_fullscreen, font=self.custom_font)
@@ -304,9 +309,11 @@ class Application(tk.Tk):
         }
 
         def send_data():
+            self.barcode_status.set(f"Status: Enviando código de barras {codigobarras}...")
             if not self.is_internet_available():
                 self.log("Sem conexão com a internet. Salvando no CSV.")
                 self.backup_data_csv(raspberry_id, codigobarras, filial_id, data_time)
+                self.barcode_status.set("Status: Aguardando...")
                 return
 
             try:
@@ -315,12 +322,17 @@ class Application(tk.Tk):
                     success_message = response.json().get('message', 'Dados enviados com sucesso')
                     self.log(success_message)
                     self.update_last_sent_timestamp(data_time)
+                    self.barcode_status.set(f"Status: Código de barras {codigobarras} enviado com sucesso.")
                 else:
                     self.log(f"Erro ao enviar dados: {response.status_code}")
                     self.backup_data_csv(raspberry_id, codigobarras, filial_id, data_time)
+                    self.barcode_status.set(f"Status: Falha ao enviar código de barras {codigobarras}.")
             except requests.exceptions.RequestException:
                 self.log("Erro ao tentar conectar com o endpoint.")
                 self.backup_data_csv(raspberry_id, codigobarras, filial_id, data_time)
+                self.barcode_status.set(f"Status: Falha ao enviar código de barras {codigobarras}.")
+
+            self.barcode_status.set("Status: Aguardando...")
 
         threading.Thread(target=send_data).start()
 
