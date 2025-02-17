@@ -78,7 +78,11 @@ class Application(tk.Tk):
         self.label.grid(row=0, column=0, padx=10, pady=10, sticky='w')
 
         self.barcode_entry = tk.Entry(self.main_frame, width=50, state='disabled', font=self.custom_font)  # Cria um widget de entrada desabilitado
-        self.barcode_entry.grid(row=0, column=1, padx=10, pady=10, sticky='w')
+        self.barcode_entry.grid(row=0, column=2, padx=10, pady=10, sticky='w')
+
+        # Label para exibir o status do envio do código de barras
+        self.barcode_status_label = tk.Label(self.network_info_frame, textvariable=self.barcode_status, font=self.custom_font, fg="orange")
+        self.barcode_status_label.grid(row=0, column=1, padx=10, pady=10, sticky='w')
 
         if self.logo_image:
             self.logo_label = tk.Label(self.main_frame, image=self.logo_image)
@@ -133,9 +137,6 @@ class Application(tk.Tk):
         self.laravel_store_endpoint_label = tk.Label(self.network_info_frame, textvariable=self.laravel_store_endpoint, font=self.custom_font, fg="green")
         self.laravel_store_endpoint_label.pack(anchor='ne', padx=10, pady=10)
 
-        # Label para exibir o status do envio do código de barras
-        self.barcode_status_label = tk.Label(self.network_info_frame, textvariable=self.barcode_status, font=self.custom_font, fg="orange")
-        self.barcode_status_label.pack(anchor='ne', padx=10, pady=10)
 
         # Botão para sair do modo de tela cheia
         self.exit_fullscreen_button = tk.Button(self.main_frame, text="Sair do modo de tela cheia", command=self.exit_fullscreen, font=self.custom_font)
@@ -391,7 +392,6 @@ class Application(tk.Tk):
                 if not file_exists:
                     writer.writerow(['timestamp', 'raspberry_id', 'codigobarras', 'filial_id', 'mac_address'])
                 writer.writerow([data_time, raspberry_id, codigobarras, filial_id, self.get_mac_address()])
-            self.log("Dados salvos localmente no CSV")
         except Exception as e:
             self.log(f"Erro ao salvar dados no CSV: {e}")
 
