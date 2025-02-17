@@ -53,6 +53,7 @@ class Application(tk.Tk):
             self.logo_image = None
             logging.error("Logo image not found. Continuing without logo.")
         
+        self.laravel_store_endpoint = tk.StringVar(value=f"Servidor: {LARAVEL_STORE_ENDPOINT}")
         self.create_widgets()
         self.load_backup_csv()  # Load CSV content on startup
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -115,6 +116,10 @@ class Application(tk.Tk):
 
         self.last_service_execution_label = tk.Label(self.network_info_frame, textvariable=self.last_service_execution_timestamp, font=self.custom_font, fg="blue")
         self.last_service_execution_label.pack(anchor='ne', padx=10, pady=10)
+
+        # Label para exibir o LARAVEL_STORE_ENDPOINT
+        self.laravel_store_endpoint_label = tk.Label(self.network_info_frame, textvariable=self.laravel_store_endpoint, font=self.custom_font, fg="green")
+        self.laravel_store_endpoint_label.pack(anchor='ne', padx=10, pady=10)
 
         # Botão para sair do modo de tela cheia
         self.exit_fullscreen_button = tk.Button(self.main_frame, text="Sair do modo de tela cheia", command=self.exit_fullscreen, font=self.custom_font)

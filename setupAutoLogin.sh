@@ -50,47 +50,6 @@ sudo apt-get update
 sudo apt-get install -y python3-pip python3-tk python3-dotenv
 pip3 install requests python-dotenv pynput --break-system-packages
 
-# Create log file for service.py and set permissions
-LOG_FILE="/var/log/staf_rasp_service.log"
-echo "Creating log file for service.py and setting permissions..."
-sudo touch $LOG_FILE
-sudo chown $USER_NAME:$USER_NAME $LOG_FILE
-
-# Create systemd service for script.py
-echo "Creating systemd service for script.py..."
-sudo bash -c "cat > /etc/systemd/system/$SERVICE_NAME <<EOF
-[Unit]
-Description=Start script.py with Tkinter after login
-After=graphical.target
-
-[Service]
-ExecStartPre=/usr/bin/git -C $WORKING_DIR pull
-ExecStart=$PYTHON_PATH $SCRIPT_PATH
-WorkingDirectory=$WORKING_DIR
-Restart=always
-User=$USER_NAME
-Group=$USER_NAME
-Environment=DISPLAY=:0
-Environment=XAUTHORITY=/home/$USER_NAME/.Xauthority
-
-[Install]
-WantedBy=default.target
-EOF"
-
-# Create systemd timer for service.py
-echo "Creating systemd timer for service.py..."
-sudo bash -c "cat > /etc/systemd/system/$TIMER_NAME <<EOF
-[Unit]
-Description=Timer to run service.py every hour
-
-[Timer]
-OnCalendar=hourly
-Persistent=true
-
-[Install]
-WantedBy=timers.target
-EOF"
-
 # Disable hibernation
 echo "Disabling hibernation..."
 sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
@@ -145,6 +104,24 @@ sudo systemctl enable $SERVICE_NAME
 sudo systemctl start $SERVICE_NAME
 sudo systemctl enable $TIMER_NAME
 sudo systemctl start $TIMER_NAME
+
+#!/bin/bash
+
+# Caminho para os scripts Python
+SEND_ALL_CSVS_SCRIPT="/home/kali/staf-rasp/send_all_csvs.py"
+SEND_CSV_SCRIPT="/home/kali/staf-rasp/send_csv.py"
+
+# Verificar se o arquivo data_backup.csv existe e movê-lo para o diretório de backup
+if [ -f "/home/kali/staf-rasp/data_backup.csv" ]; then
+    mv /home/kali/staf-rasp/data_backup.csv /home/kali/staf-rasp/backup/
+    echo "Arquivo data_backup.csv movido para o diretório de backup."
+fi
+
+# Adicionar tarefas ao crontab
+(crontab -l 2>/dev/null; echo "0 * * * * /usr/bin/python3 $SEND_ALL_CSVS_SCRIPT") | crontab -
+(crontab -l 2>/dev/null; echo "0 * * * * /usr/bin/python3 $SEND_CSV_SCRIPT") | crontab -
+
+echo "Crontab configurado para executar os scripts a cada hora."
 
 echo "Setup completed. Rebooting the system..."
 sudo reboot

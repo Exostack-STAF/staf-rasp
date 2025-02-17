@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Executar Script
+Comment=Executa um script no terminal
+Exec=/home/kali/staf-rasp/setupAutoLogin.sh
+Icon=utilities-terminal
+Terminal=true
+Categories=Utility;Application;
