@@ -39,9 +39,7 @@ class Application(tk.Tk):
         
         self.last_sent_timestamp = tk.StringVar()
         self.last_service_send_timestamp = tk.StringVar()
-        self.last_service_execution_timestamp = tk.StringVar()  # Move this line here
         self.update_last_service_send_timestamp()
-        self.update_last_service_execution_timestamp()
         self.last_sent_timestamp.set(f"Último envio dos códigos de barras em modo offline: {self.get_last_sent_timestamp()}")
         
         self.current_timestamp = tk.StringVar()
@@ -123,9 +121,6 @@ class Application(tk.Tk):
 
         self.last_service_send_label = tk.Label(self.network_info_frame, textvariable=self.last_service_send_timestamp, font=self.custom_font, fg="blue")
         self.last_service_send_label.pack(anchor='ne', padx=10, pady=10)
-
-        self.last_service_execution_label = tk.Label(self.network_info_frame, textvariable=self.last_service_execution_timestamp, font=self.custom_font, fg="blue")
-        self.last_service_execution_label.pack(anchor='ne', padx=10, pady=10)
 
         # Label para exibir o LARAVEL_STORE_ENDPOINT
         self.laravel_store_endpoint_label = tk.Label(self.network_info_frame, textvariable=self.laravel_store_endpoint, font=self.custom_font, fg="green")
@@ -286,7 +281,7 @@ class Application(tk.Tk):
         barcode = self.barcode_entry.get().strip()
         timestamp = datetime.now().strftime('%H:%M')
    
-        self.log_area.insert(tk.END, f"Codigo: {barcode} - {timestamp}\n")
+        self.log_area.insert(tk.END, f"Codigo de barras batido: {barcode} - {timestamp}\n")
         self.log_area.see(tk.END)
    
         if not barcode:
@@ -336,11 +331,13 @@ class Application(tk.Tk):
                     self.barcode_status.set(f"Status: Código de barras {codigobarras} enviado com sucesso.")
                 else:
                     self.log(f"Erro ao enviar dados: {response.status_code}")
+                    self.failed_log_area.insert(tk.END, f"Erro ao enviar: {response.text}\n")
                     self.backup_data_csv(raspberry_id, codigobarras, filial_id, data_time)
                     self.failed_log_area.insert(tk.END, f"Falha ao enviar: {codigobarras} - {data_time}\n")
                     self.barcode_status.set(f"Status: Falha ao enviar código de barras {codigobarras}.")
-            except requests.exceptions.RequestException:
-                self.log("Erro ao tentar conectar com o endpoint.")
+            except requests.exceptions.RequestException as e:
+                self.log(f"Erro ao tentar conectar com o endpoint: {e}")
+                self.failed_log_area.insert(tk.END, f"Erro ao tentar conectar: {e}\n")
                 self.backup_data_csv(raspberry_id, codigobarras, filial_id, data_time)
                 self.failed_log_area.insert(tk.END, f"Falha ao enviar: {codigobarras} - {data_time}\n")
                 self.barcode_status.set(f"Status: Falha ao enviar código de barras {codigobarras}.")
@@ -410,7 +407,7 @@ class Application(tk.Tk):
         local_network_ip = self.get_local_network_ip()
         internet_status = self.internet_status_label.cget('text')
         if mac_address and local_network_ip:
-            self.network_info_label.config(text=f"MAC: {mac_address}\nIP Rede Local: {local_network_ip}\nInternet: {internet_status}")
+            self.network_info_label.config(text=f"MAC: {mac_address}\nIP Rede Local: {local_network_ip}\n")
 
     def retry_failed_barcodes(self):
         pass  # Remove the retry logic
@@ -428,11 +425,6 @@ class Application(tk.Tk):
         except ValueError:
             self.last_service_send_timestamp.set("Último envio: Nunca\nPróximo envio: Em uma hora após o primeiro envio")
         self.after(60000, self.update_last_service_send_timestamp)
-
-    def update_last_service_execution_timestamp(self):
-        last_execution = os.getenv('LAST_EXECUTION_TIMESTAMP', 'Nunca')
-        self.last_service_execution_timestamp.set(f"Última execução do serviço: {last_execution}")
-        self.after(60000, self.update_last_service_execution_timestamp)
 
     def send_csv(self):
         try:
