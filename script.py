@@ -61,7 +61,6 @@ class Application(tk.Tk):
         self.last_sent_timestamp = tk.StringVar()
         self.last_service_send_timestamp = tk.StringVar()
         self.update_last_service_send_timestamp()
-        self.last_sent_timestamp.set(f"Último envio dos códigos de barras em modo offline: {self.get_last_sent_timestamp()}")
         
         self.current_timestamp = tk.StringVar()
         self.update_current_timestamp()
