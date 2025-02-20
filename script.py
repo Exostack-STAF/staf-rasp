@@ -58,9 +58,6 @@ class Application(tk.Tk):
 
         self.custom_font = tkfont.Font(family="Helvetica", size=12)
         
-        self.last_sent_timestamp = tk.StringVar()
-        self.last_service_send_timestamp = tk.StringVar()
-        self.update_last_service_send_timestamp()
         
         self.current_timestamp = tk.StringVar()
         self.update_current_timestamp()
