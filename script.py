@@ -74,7 +74,6 @@ class Application(tk.Tk):
         
         self.laravel_store_endpoint = tk.StringVar(value=f"Servidor: {LARAVEL_STORE_ENDPOINT}")
         self.barcode_status = tk.StringVar(value="Status: Aguardando...")
-        self.check_and_run_setup_cron()
         self.create_widgets()
         self.load_backup_csv()  # Load CSV content on startup
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -158,10 +157,6 @@ class Application(tk.Tk):
         # Label para exibir o status do envio do código de barras
         self.barcode_status_label = tk.Label(self.network_info_frame, textvariable=self.barcode_status, font=self.custom_font, fg="orange")
         self.barcode_status_label.pack(anchor='ne', padx=10, pady=10)
-
-        # Label para exibir o status do setup_cron
-        self.setup_cron_status_label = tk.Label(self.network_info_frame, text="Status do setup_cron: Verificando...", font=self.custom_font, fg="blue")
-        self.setup_cron_status_label.pack(anchor='ne', padx=10, pady=10)
 
         # Botão para sair do modo de tela cheia
         self.exit_fullscreen_button = tk.Button(self.main_frame, text="Sair do modo de tela cheia", command=self.exit_fullscreen, font=self.custom_font)
@@ -510,20 +505,6 @@ class Application(tk.Tk):
                 self.unsent_barcode_log_area.insert(tk.END, "Nenhum CSV de backup encontrado.\n")
         except Exception as e:
             self.log_error(f"Erro ao carregar CSV de backup: {e}")
-
-    def check_and_run_setup_cron(self):
-        setup_cron_path = "/home/kali/staf-rasp/setup_cron.sh"
-        cron_job = "0 * * * * /usr/bin/python3 /home/kali/staf-rasp/send_all_csvs.py"
-
-        try:
-            result = subprocess.run(["crontab", "-l"], capture_output=True, text=True)
-            if cron_job not in result.stdout:
-                subprocess.run(["bash", setup_cron_path], check=True)
-                self.setup_cron_status_label.config(text="Status do setup_cron: Instalado e executado.", fg="green")
-            else:
-                self.setup_cron_status_label.config(text="Status do setup_cron: Já instalado.", fg="green")
-        except subprocess.CalledProcessError as e:
-            self.setup_cron_status_label.config(text=f"Status do setup_cron: Erro ao verificar/instalar - {e}", fg="red")
 
 if __name__ == "__main__":
     app = Application()
