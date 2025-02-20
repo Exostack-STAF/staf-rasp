@@ -137,7 +137,7 @@ class Application(tk.Tk):
 
         # Frame para informações de rede
         self.network_info_frame = ttk.Frame(self.main_frame)
-        self.network_info_frame.grid(row=3, column=0, columnspan=2, padx=10, pady=10, sticky='nsew')
+        self.network_info_frame.grid(row=3, column=0, columnspan=3, padx=10, pady=10, sticky='nsew')
 
         self.network_info_label = tk.Label(self.network_info_frame, text="", font=self.custom_font, fg="gray")
         self.network_info_label.pack(anchor='ne', padx=10, pady=10)
