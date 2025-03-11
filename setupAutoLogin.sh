@@ -8,6 +8,9 @@ PYTHON_PATH="/usr/bin/python3"
 SERVICE_NAME="script.service"
 TIMER_NAME="python-hourly.timer"
 
+# Detect the operating system
+OS=$(lsb_release -si)
+
 # Create .env file if it does not exist
 ENV_FILE="$WORKING_DIR/.env"
 if [ ! -f "$ENV_FILE" ]; then
@@ -38,16 +41,24 @@ EOF"
 
 # Edit LightDM configuration to enable auto-login
 echo "Configuring LightDM for auto-login..."
-sudo bash -c "cat >> /etc/lightdm/lightdm.conf <<EOF
+if [ "$OS" == "Ubuntu" ]; then
+    sudo bash -c "cat >> /etc/lightdm/lightdm.conf.d/50-myconfig.conf <<EOF
 [Seat:*]
 autologin-user=$USER_NAME
 autologin-user-timeout=0
 EOF"
+else
+    sudo bash -c "cat >> /etc/lightdm/lightdm.conf <<EOF
+[Seat:*]
+autologin-user=$USER_NAME
+autologin-user-timeout=0
+EOF"
+fi
 
 # Install dependencies
 echo "Installing dependencies..."
 sudo apt-get update
-sudo apt-get install -y python3-pip python3-tk python3-dotenv
+sudo apt-get install -y python3-pip python3-tk python3-dotenv lightdm
 pip3 install requests python-dotenv pynput --break-system-packages
 
 # Disable hibernation
